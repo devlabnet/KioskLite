@@ -1,0 +1,19 @@
+#!/bin/sh
+
+# Disable screen blanking and power management
+xset s off
+xset s noblank
+xset -dpms
+
+# Hide mouse cursor after 1 second
+unclutter -idle 1 -root &
+
+# Start the Openbox window manager
+openbox-session &
+
+# Give Openbox a moment to start
+sleep 1
+
+# Start Midori in fullscreen mode
+# Replace the URL below with your own KioskLite installation
+exec midori -e Fullscreen https://example.org/kiosk/
