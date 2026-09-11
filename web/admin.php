@@ -294,7 +294,7 @@ if (empty ( $_SESSION ['kiosk_admin'] )) {
 
 <meta name="viewport" content="width=device-width, initial-scale=1">
 
-<title><?php echo __('KioskLite_Admin'); ?></title>
+<title><?php echo __('kiosklite_admin'); ?></title>
 
 <style>
 body {
@@ -493,7 +493,7 @@ button {
 
 		<h1>Kiosk</h1>
 
-		<p><?php echo __('Media_Admin'); ?></p>
+		<p><?php echo __('media_admin'); ?></p>
 
 <?php if ($error): ?>
 
@@ -588,7 +588,7 @@ if (isset($_POST['save_settings'])) {
 			$config
 			);
 
-	$_SESSION['message'] = __('Display_settings_saved');
+	$_SESSION['message'] = __('display_settings_saved');
 
 	redirectAdmin();
 }
@@ -649,7 +649,7 @@ if (isset ( $_POST ['upload'] )) {
 			'end' => '' 
 	];
 	saveConfig ( $configFile, $config );
-	$_SESSION ['message'] =  __('Media_added') .': '. $filename;
+	$_SESSION ['message'] =  __('media_added') .': '. $filename;
 	redirectAdmin ();
 }
 /*
@@ -689,7 +689,7 @@ if (isset ( $_POST ['save'] )) {
 		return $d !== false && $d->format ( 'Y-m-d' ) === $date;
 	};
 	if (! $validDate ( $start )) {
-		$_SESSION ['message'] =__('Invalid_start_date');
+		$_SESSION ['message'] =__('invalid_end_date');
 		redirectAdmin ();
 	}
 	if (! $validDate ( $end )) {
@@ -709,7 +709,7 @@ if (isset ( $_POST ['save'] )) {
 	$config [$zone] [$filename] ['start'] = $start;
 	$config [$zone] [$filename] ['end'] = $end;
 	saveConfig ( $configFile, $config );
-	$_SESSION ['message'] = __('Settings_saved') . ': ' . $filename;
+	$_SESSION ['message'] = __('settings_saved') . ': ' . $filename;
 	redirectAdmin ();
 }
 /*
@@ -777,7 +777,7 @@ if (isset ( $_POST ['delete'] )) {
 	}
 	unset ( $cfg );
 	saveConfig ( $configFile, $config );
-	$_SESSION ['message'] =  __('Media_deleted').': '. $filename;
+	$_SESSION ['message'] =  __('media_deleted').': '. $filename;
 	redirectAdmin ();
 }
 /*
@@ -860,7 +860,7 @@ $rightFiles = buildDisplayList ( getPhysicalFiles ( $zones ['right'] ), $config 
 
 <meta name="viewport" content="width=device-width, initial-scale=1">
 
-<title><?php echo __('KioskLite_Admin'); ?></title>
+<title><?php echo __('kiosklite_admin'); ?></title>
 
 <style>
 * {
@@ -1052,11 +1052,11 @@ button {
 
 		<div>
 
-			<h1><?php echo __('KioskLite_Admin'); ?></h1>
+			<h1><?php echo __('kiosklite_admin'); ?></h1>
 
 		</div>
 
-		<a href="?logout=1" class="logout"> <?php echo __('Log_out'); ?> </a>
+		<a href="?logout=1" class="logout"> <?php echo __('log_out'); ?> </a>
 
     <!-- Language Switcher Links -->
     <nav>
@@ -1087,7 +1087,7 @@ button {
     value="<?= htmlspecialchars($_SESSION['csrf']) ?>"
 >
 
-<strong><?php echo __('General_Display'); ?></strong>
+<strong><?php echo __('general_display'); ?></strong>
 <br>
 
 <label class="title-setting">
@@ -1110,7 +1110,7 @@ button {
             ? 'checked'
             : '' ?>
     >
-	<?php echo __('Date_and_time'); ?>
+	<?php echo __('date_and_time'); ?>
 </label>
 
 <br>
@@ -1123,14 +1123,14 @@ button {
             ? 'checked'
             : '' ?>
     >
-	<?php echo __('Weather'); ?>
+	<?php echo __('weather'); ?>
 </label>
 <br>
 
 <div class="weather-settings">
 
 <label>
-	<?php echo __('Location'); ?>
+	<?php echo __('location'); ?>
     <input
         type="text"
         name="weather_name"
@@ -1158,7 +1158,7 @@ button {
     >
 </label>
 <label>
-	<?php echo __('Timezone'); ?>
+	<?php echo __('timezone'); ?>
     <input
         type="text"
         name="timezone"
@@ -1179,7 +1179,7 @@ button {
     name="save_settings"
     value="1"
 >
-<?php echo __('Save'); ?>
+<?php echo __('save'); ?>
 </button>
 
 </form>
@@ -1199,8 +1199,8 @@ function countDisplayedMedia(array $files): int {
 	return $count;
 }
 foreach ( [ 
-		'left' => __('LeftArea'),
-		'right' => __('RightArea')
+		'left' => __('left_area'),
+		'right' => __('right_area')
 ] as $zone => $title ) :
 	$files = $zone === 'left' ? $leftFiles : $rightFiles;
 	$totalCount = count ( $files );
@@ -1228,14 +1228,14 @@ foreach ( [
 					type="hidden" name="zone" value="<?= $zone ?>"> <input type="file"
 					name="media" accept="image/*,video/mp4,video/webm" required>
 
-				<button type="submit" name="upload" value="1">+ <?php echo __('Add'); ?></button>
+				<button type="submit" name="upload" value="1">+ <?php echo __('add'); ?></button>
 
 			</form>
 
 
 <?php if (!$files): ?>
 
-<div class="empty"><?php echo __('No_media'); ?></div>
+<div class="empty"><?php echo __('no_media'); ?></div>
 
 <?php endif; ?>
 
@@ -1296,7 +1296,7 @@ foreach ( [
 
 							<div class="settings-line">
 
-								<label> <?php echo __('Duration'); ?> </label> <input class="duration" type="number"
+								<label> <?php echo __('duration'); ?> </label> <input class="duration" type="number"
 									name="duration" min="1" max="600"
 									value="<?= $file['duration'] ?>"> <span><?php echo __('seconds'); ?> </span> <label
 									class="active-label"> <input type="checkbox" name="active"
@@ -1311,7 +1311,7 @@ foreach ( [
 
 							<div class="settings-line">
 
-								<label> <?php echo __('From'); ?> </label> <input class="date" type="date" name="start"
+								<label> <?php echo __('from'); ?> </label> <input class="date" type="date" name="start"
 									value="<?= htmlspecialchars($file['start']) ?>"> <label> <?php echo __('to'); ?></label>
 
 								<input class="date" type="date" name="end"
@@ -1319,7 +1319,7 @@ foreach ( [
 
 
 								<button class="save" type="submit" name="save" value="1">
-									<?php echo __('Save'); ?></button>
+									<?php echo __('save'); ?></button>
 
 							</div>
 
@@ -1344,7 +1344,7 @@ foreach ( [
 									type="hidden" name="direction" value="up">
 
 								<button class="move" type="submit" name="move" value="1"
-									title="Move up">↑ <?php echo __('Move_up'); ?></button>
+									title="Move up">↑ <?php echo __('move_up'); ?></button>
 
 							</form>
 
@@ -1361,7 +1361,7 @@ foreach ( [
 									type="hidden" name="direction" value="down">
 
 								<button class="move" type="submit" name="move" value="1"
-									title="Move down">↓  <?php echo __('Move_down'); ?></button>
+									title="Move down">↓  <?php echo __('move_down'); ?></button>
 
 							</form>
 
@@ -1369,7 +1369,7 @@ foreach ( [
 							<!-- SUPPRIMER -->
 
 							<form method="post"
-								onsubmit="return confirm('<?php echo __('Delete_Media_?'); ?>');">
+								onsubmit="return confirm('<?php echo __('delete_media_?'); ?>');">
 
 								<input type="hidden" name="csrf"
 									value="<?= htmlspecialchars($_SESSION['csrf']) ?>"> <input
@@ -1378,7 +1378,7 @@ foreach ( [
 									value="<?= htmlspecialchars($file['name']) ?>">
 
 								<button class="delete" type="submit" name="delete" value="1">
-									<?php echo __('Delete'); ?></button>
+									<?php echo __('delete'); ?></button>
 
 							</form>
 

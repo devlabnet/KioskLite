@@ -139,7 +139,7 @@ to {
 
 		<div id="clock" class="clock"></div>
 
-		<div id="weather" class="weather"><?php echo __('Loading_weather'); ?>...</div>
+		<div id="weather" class="weather"><?php echo __('loading_weather'); ?>...</div>
 	</div>
 
 	<div class="slides-container">
