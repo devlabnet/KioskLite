@@ -4,7 +4,7 @@ require_once 'i18n.php';
 ?>
 
 <!DOCTYPE html>
-<html lang="en">
+<html lang="<?= htmlspecialchars($locale) ?>">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
@@ -158,6 +158,18 @@ to {
 ============================================================ */
 
 const API_REFRESH    = 30000;      // check every 30 seconds
+const LOCALE =
+    <?= json_encode(
+        $locale === 'fr'
+            ? 'fr-FR'
+            : 'en-GB'
+    ) ?>;
+
+const I18N = {
+    kiosk: <?= json_encode(__('kiosk')) ?>,
+    noMedia: <?= json_encode(__('no_media')) ?>,
+    weatherUnavailable: <?= json_encode(__('weather_unavailable')) ?>
+};
 
 let currentVersion = null;
 
@@ -179,7 +191,7 @@ function updateClock()
         weatherSettings.timezone || "UTC";
 
     const date = now.toLocaleDateString(
-        "en-GB",
+        LOCALE,
         {
             weekday: "long",
             day: "numeric",
@@ -190,7 +202,7 @@ function updateClock()
     );
 
     const time = now.toLocaleTimeString(
-        "en-GB",
+        LOCALE,
         {
             hour: "2-digit",
             minute: "2-digit",
@@ -281,7 +293,7 @@ function updateInfoBar(settings)
         document.getElementById("banner");
 
     banner.textContent =
-        settings.kiosk_title || "Kiosk";
+        settings.kiosk_title || I18N.kiosk;
     
     const showClock =
         settings.show_clock !== false;
@@ -417,7 +429,7 @@ class Slideshow
             empty.className = "empty";
 
             empty.textContent =
-                "No media";
+                I18N.noMedia;
 
             this.element.appendChild(empty);
 
@@ -725,7 +737,7 @@ async function updateWeather()
 
             const day =
                 date.toLocaleDateString(
-                    "en-GB",
+                    LOCALE,
                     { weekday: "short" }
                 );
 
@@ -757,7 +769,7 @@ async function updateWeather()
         console.log("Weather error :", error);
 
         weather.textContent =
-            "Weather temporarily unavailable";
+            I18N.weatherUnavailable;
     }
 }
 

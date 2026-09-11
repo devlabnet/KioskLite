@@ -1,5 +1,6 @@
 <?php
 return [
+    'kiosk'   => 'Kiosque',
     'loading_weather'   => 'Chargement météo',
     'weather_unavailable'    => 'Météo momentanément indisponible',
     'media_admin'  => 'Administration des médias',

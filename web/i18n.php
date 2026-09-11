@@ -1,6 +1,7 @@
 <?php
-session_start();
-
+if (session_status() === PHP_SESSION_NONE) {
+    session_start();
+}
 // 1. Define supported languages
 $allowed_locales = ['en', 'fr'];
 $default_locale  = 'en';

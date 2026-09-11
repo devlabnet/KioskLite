@@ -1,5 +1,6 @@
 <?php
 return [
+    'kiosk'   => 'Kiosk',
     'loading_weather'   => 'Loading weather',
     'weather_unavailable'    => 'weather temporarily unavailable',
     'media_admin'  => 'Media Administration',
