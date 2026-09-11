@@ -6,7 +6,7 @@ header ( 'Cache-Control: no-cache, no-store, must-revalidate' );//
  // ============================================================
  // Configuration
  // ============================================================
- */
+ 
 const DEFAULT_DURATION = 8;
 $configFile = __DIR__ . '/config.json';
 $config = [

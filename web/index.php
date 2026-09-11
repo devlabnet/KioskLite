@@ -3,7 +3,7 @@
 ?>
 
 <!DOCTYPE html>
-<html lang="fr">
+<html lang="en">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
@@ -28,7 +28,7 @@ body {
 }
 
 /* ----------------------------------------
-   Bandeau supérieur
+   Top Banner
 ----------------------------------------- */
 .banner {
 	flex: 0 0 auto;
@@ -43,7 +43,7 @@ body {
 }
 
 /* ----------------------------------------
-   Date / météo
+   Date / weather
 ----------------------------------------- */
 .info-bar {
 	flex: 0 0 105px;
@@ -81,7 +81,7 @@ body {
 	gap: 4px;
 }
 
-/* Une zone de slideshow */
+/* One slideshow zone */
 .slideshow {
 	flex: 1;
 	min-width: 0;
@@ -105,13 +105,13 @@ body {
 	object-fit: contain;
 }
 
-/* Si une zone est vide */
+/* If one zone is empty */
 .empty {
 	font-size: 24px;
 	color: #aaa;
 }
 
-/* Petite transition des images */
+/* Small image transition */
 .slide-image {
 	animation: fadein 0.5s;
 }
@@ -138,8 +138,7 @@ to {
 
 		<div id="clock" class="clock"></div>
 
-		<div id="weather" class="weather">Chargement météo...</div>
-
+		<div id="weather" class="weather">Loading weather...</div>
 	</div>
 
 	<div class="slides-container">
@@ -157,7 +156,7 @@ to {
    Configuration
 ============================================================ */
 
-const API_REFRESH    = 30000;      // vérification toutes les 30 s
+const API_REFRESH    = 30000;      // check every 30 seconds
 
 /* ============================================================
    Horloge
@@ -167,22 +166,27 @@ function updateClock()
 {
     const now = new Date();
 
+    const timezone =
+        weatherSettings.timezone || "UTC";
+
     const date = now.toLocaleDateString(
-        "fr-FR",
+        "en-GB",
         {
             weekday: "long",
             day: "numeric",
             month: "long",
-            year: "numeric"
+            year: "numeric",
+            timeZone: timezone
         }
     );
 
     const time = now.toLocaleTimeString(
-        "fr-FR",
+        "en-GB",
         {
             hour: "2-digit",
             minute: "2-digit",
-            second: "2-digit"
+            second: "2-digit",
+            timeZone: timezone
         }
     );
 
@@ -251,7 +255,7 @@ function updateLayout(leftItems, rightItems)
 
 
     /*
-     * Aucun média actif
+     * No active media
      */
 
     left.style.display = "flex";
@@ -292,14 +296,14 @@ function updateInfoBar(settings)
     weather.style.display =
         showWeather ? "block" : "none";
 
-    weatherSettings = {
-            name: settings.weather_name || "",
-            lat: settings.weather_lat,
-            lon: settings.weather_lon
-        };
+	weatherSettings = {
+		name: settings.weather_name || "",
+		lat: settings.weather_lat,
+		lon: settings.weather_lon,
+		timezone: settings.timezone || "UTC"
+	};
     /*
-     * Les deux sont désactivés :
-     * on supprime complètement la barre.
+     * Both are disabled: remove the bar completely.
      */
     if (!showClock && !showWeather) {
 
@@ -313,8 +317,7 @@ function updateInfoBar(settings)
 
 
     /*
-     * Un seul élément visible :
-     * il prend toute la largeur.
+     * Only one visible item: it takes the full width.
      */
     if (showClock && !showWeather) {
 
@@ -341,7 +344,7 @@ function updateInfoBar(settings)
 }
 
 /* ============================================================
-   Gestion d'un slideshow
+   Slideshow handling
 ============================================================ */
 
 class Slideshow
@@ -362,8 +365,7 @@ class Slideshow
     setItems(items)
     {
         /*
-         * On évite de redémarrer le slideshow
-         * si sa liste n'a pas changé.
+         *  Avoid restarting the slideshow if its media list has not changed.
          */
 
         const oldList =
@@ -396,7 +398,7 @@ class Slideshow
         this.element.innerHTML = "";
 
 
-        /* Aucun média */
+        /* No media */
 
         if (this.items.length === 0)
         {
@@ -406,7 +408,7 @@ class Slideshow
             empty.className = "empty";
 
             empty.textContent =
-                "Aucun média";
+                "No media";
 
             this.element.appendChild(empty);
 
@@ -414,7 +416,7 @@ class Slideshow
         }
 
 
-        /* Sécurité index */
+        /* Index safety check */
 
         if (this.index >= this.items.length) {
             this.index = 0;
@@ -426,7 +428,7 @@ class Slideshow
 
 
         /* ----------------------------------------
-           Vidéo
+           Video
         ----------------------------------------- */
 
         if (item.type === "video")
@@ -446,9 +448,7 @@ class Slideshow
             };
 
             /*
-             * Si la vidéo refuse de démarrer
-             * ou provoque une erreur,
-             * on passe à la suivante.
+             *If the video fails to start or triggers an error, move to the next item.
              */
 
             video.onerror = () => {
@@ -470,7 +470,7 @@ class Slideshow
             video.play().catch(error => {
 
                 console.log(
-                    "Autoplay impossible :",
+                    "Autoplay failed :",
                     error
                 );
 
@@ -535,7 +535,7 @@ class Slideshow
 
 
 /* ============================================================
-   Création des deux slideshows
+   Create both slideshows
 ============================================================ */
 
 const leftSlideshow =
@@ -546,16 +546,17 @@ const rightSlideshow =
 
 
 /* ============================================================
-   Lecture API
+   API fetch
 ============================================================ */
 
 let currentVersion = null;
 
 let weatherSettings = {
-	    name: "",
-	    lat: null,
-	    lon: null
-	};
+    name: "",
+    lat: null,
+    lon: null,
+    timezone: "UTC"
+};
 
 async function updateSlides()
 {
@@ -583,8 +584,7 @@ async function updateSlides()
 
 
         /*
-         * Version inchangée :
-         * rien à faire.
+         * Version unchanged: nothing to do.
          */
 
         if (
@@ -596,7 +596,7 @@ async function updateSlides()
 
 
         console.log(
-            "Nouvelle configuration kiosk :",
+            "New kiosk configuration :",
             data.version
         );
 
@@ -624,25 +624,23 @@ async function updateSlides()
     catch(error)
     {
         /*
-         * Très important pour le kiosk :
-         * si Internet tombe, on ne détruit pas
-         * ce qui est actuellement affiché.
+         * Very important for the kiosk: if the Internet connection is lost, keep the currently displayed content.
          */
 
         console.log(
-            "Impossible de joindre api.php :",
+            "Unable to reach api.php :",
             error
         );
     }
 }
 
 
-/* Première lecture */
+/* Initial fetch */
 
 updateSlides();
 
 
-/* Puis vérification périodique */
+/* Then check periodically */
 
 setInterval(
     updateSlides,
@@ -650,7 +648,7 @@ setInterval(
 );
 
 /* ============================================================
-   Météo Montbrison
+   Weather
 ============================================================ */
 
 const WEATHER_REFRESH = 30 * 60 * 1000; // 30 minutes
@@ -675,7 +673,7 @@ async function updateWeather()
             "&longitude=" + encodeURIComponent(weatherSettings.lon) +
             "&current=temperature_2m,weather_code" +
             "&daily=weather_code,temperature_2m_max,temperature_2m_min" +
-            "&timezone=Europe%2FParis" +
+            "&timezone=" + encodeURIComponent(weatherSettings.timezone) +
             "&forecast_days=3";
         const response = await fetch(url);
 
@@ -726,7 +724,7 @@ async function updateWeather()
 
             const day =
                 date.toLocaleDateString(
-                    "fr-FR",
+                    "en-GB",
                     { weekday: "short" }
                 );
 
@@ -755,10 +753,10 @@ async function updateWeather()
     }
     catch(error)
     {
-        console.log("Erreur météo :", error);
+        console.log("Weather error :", error);
 
         weather.textContent =
-            "Météo momentanément indisponible";
+            "Weather temporarily unavailable";
     }
 }
 

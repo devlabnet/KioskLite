@@ -24,7 +24,7 @@ if (
 		$adminPasswordHash =
 		$localConfig['admin_password_hash'];
 		
-const MAX_UPLOAD_SIZE = 50 * 1024 * 1024; // 50 Mo
+const MAX_UPLOAD_SIZE = 50 * 1024 * 1024; // 50 MB
 const DEFAULT_DURATION = 8;
 $configFile = __DIR__ . '/config.json';
 $zones = [ 
@@ -33,7 +33,7 @@ $zones = [
 ];
 /*
  * ============================================================
- * FONCTIONS GENERALES
+ * GENERAL FUNCTIONS
  * ============================================================
  */
 function redirectAdmin() {
@@ -76,12 +76,13 @@ function formatSize(int $bytes): string {
 function loadConfig(string $configFile): array {
 	$config = [
 			'settings' => [
-					'kiosk_title'  => 'Bienvenue au Centre Social de Montbrison',
-					'show_clock'   => true,
-					'show_weather' => true,
-					'weather_name' => 'Montbrison',
-					'weather_lat'  => 45.61,
-					'weather_lon'  => 4.06
+				'kiosk_title'  => 'KioskLite',
+				'show_clock'   => true,
+				'show_weather' => false,
+				'weather_name' => '',
+				'weather_lat'  => 0,
+				'weather_lon'  => 0,
+				'timezone'     => 'UTC'
 			],
 			'left'  => [],
 			'right' => []
@@ -122,7 +123,7 @@ function saveConfig(string $configFile, array $config): bool {
 }
 /*
  * ============================================================
- * LECTURE DES FICHIERS
+ * READ FILES
  * ============================================================
  */
 function getPhysicalFiles(string $directory): array {
@@ -166,7 +167,7 @@ function getPhysicalFiles(string $directory): array {
 }
 /*
  * ============================================================
- * SYNCHRONISATION CONFIG <-> FICHIERS
+ * CONFIG <-> FILE SYNCHRONIZATION
  * ============================================================
  */
 function syncZoneConfig(array &$zoneConfig, array $files): bool {
@@ -176,8 +177,7 @@ function syncZoneConfig(array &$zoneConfig, array $files): bool {
 		$filename = $file ['name'];
 		$existingNames [$filename] = true;
 		/*
-		 * Nouveau média :
-		 * ajout automatique dans config
+		 * New media item: automatically add it to the configuration
 		 */
 		if (! isset ( $zoneConfig [$filename] )) {
 			$maxOrder = 0;
@@ -193,8 +193,7 @@ function syncZoneConfig(array &$zoneConfig, array $files): bool {
 			$changed = true;
 		}
 		/*
-		 * Complète une vieille entrée
-		 * éventuellement incomplète.
+		 * Complete an existing entry if some fields are missing.
 		 */
 		if (! isset ( $zoneConfig [$filename] ['duration'] )) {
 			$zoneConfig [$filename] ['duration'] = DEFAULT_DURATION;
@@ -218,8 +217,7 @@ function syncZoneConfig(array &$zoneConfig, array $files): bool {
 		}
 	}
 	/*
-	 * Nettoyage des fichiers supprimés
-	 * éventuellement via FTP
+	 * Remove entries for files that were deleted, for example via FTP
 	 */
 	foreach ( array_keys ( $zoneConfig ) as $filename ) {
 		if (! isset ( $existingNames [$filename] )) {
@@ -228,8 +226,7 @@ function syncZoneConfig(array &$zoneConfig, array $files): bool {
 		}
 	}
 	/*
-	 * Normalisation des ordres :
-	 * 1, 2, 3, 4...
+	 * Normalize ordering: 1, 2, 3, 4...
 	 */
 	uasort ( $zoneConfig, function ($a, $b) {
 		$oa = ( int ) ($a ['order'] ?? 999999);
@@ -282,7 +279,7 @@ if (
 }
 /*
  * ============================================================
- * PAGE LOGIN
+ * LOGIN PAGE
  * ============================================================
  */
 if (empty ( $_SESSION ['kiosk_admin'] )) {
@@ -296,7 +293,7 @@ if (empty ( $_SESSION ['kiosk_admin'] )) {
 
 <meta name="viewport" content="width=device-width, initial-scale=1">
 
-<title>Administration Kiosk</title>
+<title>KioskLite Administration</title>
 
 <style>
 body {
@@ -495,7 +492,7 @@ button {
 
 		<h1>Kiosk</h1>
 
-		<p>Administration des médias</p>
+		<p>Media Administration</p>
 
 <?php if ($error): ?>
 
@@ -510,7 +507,7 @@ button {
 			<input type="password" name="password" placeholder="Mot de passe"
 				autofocus required>
 
-			<button type="submit" name="login" value="1">Connexion</button>
+			<button type="submit" name="login" value="1">Log in</button>
 
 		</form>
 
@@ -530,12 +527,12 @@ button {
  */
 function checkCsrf() {
 	if (empty ( $_POST ['csrf'] ) || empty ( $_SESSION ['csrf'] ) || ! hash_equals ( $_SESSION ['csrf'], $_POST ['csrf'] )) {
-		die ( 'Requête invalide.' );
+		die ( 'Invalid request.' );
 	}
 }
 /*
  * ============================================================
- * CHARGEMENT + SYNCHRO
+ * LOAD + SYNCHRONIZATION
  * ============================================================
  */
 $config = loadConfig ( $configFile );
@@ -569,17 +566,29 @@ if (isset($_POST['save_settings'])) {
 	trim($_POST['weather_name'] ?? '');
 	
 	$config['settings']['weather_lat'] =
-	(float)($_POST['weather_lat'] ?? 45.61);
-	
+	(float)($_POST['weather_lat'] ?? 0);
+
 	$config['settings']['weather_lon'] =
-	(float)($_POST['weather_lon'] ?? 4.06);
+	(float)($_POST['weather_lon'] ?? 0);
+
+	$timezoneName =
+		trim($_POST['timezone'] ?? 'UTC');
+	if (!in_array($timezoneName, timezone_identifiers_list(), true)) {
+		$_SESSION['message'] =
+			'Invalid timezone. Example: Europe/Paris';
+		redirectAdmin();
+	}
+
+	$config['settings']['timezone'] =
+		$timezoneName;
+		
 	saveConfig(
 			$configFile,
 			$config
 			);
 
 	$_SESSION['message'] =
-	'Paramètres d’affichage enregistrés.';
+	'Display settings saved.';
 
 	redirectAdmin();
 }
@@ -592,15 +601,15 @@ if (isset ( $_POST ['upload'] )) {
 	checkCsrf ();
 	$zone = $_POST ['zone'] ?? '';
 	if (! isset ( $zones [$zone] )) {
-		die ( 'Zone invalide.' );
+		die ( 'Invalid zone.' );
 	}
 	if (! isset ( $_FILES ['media'] ) || $_FILES ['media'] ['error'] !== UPLOAD_ERR_OK) {
-		$_SESSION ['message'] = 'Erreur pendant l’envoi du fichier.';
+		$_SESSION ['message'] = 'An error occurred while uploading the file.';
 		redirectAdmin ();
 	}
 	$upload = $_FILES ['media'];
 	if ($upload ['size'] > MAX_UPLOAD_SIZE) {
-		$_SESSION ['message'] = 'Fichier trop volumineux.';
+		$_SESSION ['message'] = 'File is too large.';
 		redirectAdmin ();
 	}
 	$finfo = new finfo ( FILEINFO_MIME_TYPE );
@@ -614,7 +623,7 @@ if (isset ( $_POST ['upload'] )) {
 			'video/webm' => 'webm' 
 	];
 	if (! isset ( $allowed [$mime] )) {
-		$_SESSION ['message'] = 'Format non autorisé : ' . $mime;
+		$_SESSION ['message'] = 'Unsupported file format : ' . $mime;
 		redirectAdmin ();
 	}
 	$extension = $allowed [$mime];
@@ -622,11 +631,11 @@ if (isset ( $_POST ['upload'] )) {
 	$filename = uniqueFilename ( $zones [$zone], $base, $extension );
 	$destination = $zones [$zone] . '/' . $filename;
 	if (! move_uploaded_file ( $upload ['tmp_name'], $destination )) {
-		$_SESSION ['message'] = 'Impossible d’enregistrer le fichier.';
+		$_SESSION ['message'] = 'Unable to save the file.';
 		redirectAdmin ();
 	}
 	/*
-	 * Ajout direct dans config
+	 * Add directly to configuration
 	 */
 	$maxOrder = 0;
 	foreach ( $config [$zone] as $cfg ) {
@@ -640,13 +649,13 @@ if (isset ( $_POST ['upload'] )) {
 			'end' => '' 
 	];
 	saveConfig ( $configFile, $config );
-	$_SESSION ['message'] = 'Média ajouté : ' . $filename;
+	$_SESSION ['message'] = 'Media added : ' . $filename;
 	redirectAdmin ();
 }
 /*
  * ============================================================
- * MODIFICATION MEDIA
- * durée + actif + dates
+ * MEDIA SETTINGS
+ * duration + active status + dates
  * ============================================================
  */
 if (isset ( $_POST ['save'] )) {
@@ -654,9 +663,9 @@ if (isset ( $_POST ['save'] )) {
 	$zone = $_POST ['zone'] ?? '';
 	$filename = basename ( $_POST ['file'] ?? '');
 	if (! isset ( $config [$zone] [$filename] )) {
-		die ( 'Média invalide.' );
+		die ( 'Invalid media item.' );
 	}
-	/* ---------- Durée ---------- */
+	/* ---------- Duration ---------- */
 	$duration = ( int ) ($_POST ['duration'] ?? DEFAULT_DURATION);
 	if ($duration < 1) {
 		$duration = 1;
@@ -664,13 +673,13 @@ if (isset ( $_POST ['save'] )) {
 	if ($duration > 600) {
 		$duration = 600;
 	}
-	/* ---------- Actif ---------- */
+	/* ---------- Active ---------- */
 	$active = isset ( $_POST ['active'] );
 	/* ---------- Dates ---------- */
 	$start = trim ( $_POST ['start'] ?? '');
 	$end = trim ( $_POST ['end'] ?? '');
 	/*
-	 * Validation YYYY-MM-DD
+	 * Validate YYYY-MM-DD format
 	 */
 	$validDate = function ($date) {
 		if ($date === '') {
@@ -680,33 +689,32 @@ if (isset ( $_POST ['save'] )) {
 		return $d !== false && $d->format ( 'Y-m-d' ) === $date;
 	};
 	if (! $validDate ( $start )) {
-		$_SESSION ['message'] = 'Date de début invalide.';
+		$_SESSION ['message'] = 'Invalid start date.';
 		redirectAdmin ();
 	}
 	if (! $validDate ( $end )) {
-		$_SESSION ['message'] = 'Date de fin invalide.';
+		$_SESSION ['message'] = 'Invalid end date.';
 		redirectAdmin ();
 	}
 	/*
-	 * Une fin ne peut pas être
-	 * antérieure au début.
+	 * The end date cannot be earlier than the start date.
 	 */
 	if ($start !== '' && $end !== '' && $end < $start) {
-		$_SESSION ['message'] = 'La date de fin est antérieure à la date de début.';
+		$_SESSION ['message'] = 'The end date cannot be earlier than the start date.';
 		redirectAdmin ();
 	}
-	/* ---------- Enregistrement ---------- */
+	/* ---------- Save ---------- */
 	$config [$zone] [$filename] ['duration'] = $duration;
 	$config [$zone] [$filename] ['active'] = $active;
 	$config [$zone] [$filename] ['start'] = $start;
 	$config [$zone] [$filename] ['end'] = $end;
 	saveConfig ( $configFile, $config );
-	$_SESSION ['message'] = 'Paramètres enregistrés : ' . $filename;
+	$_SESSION ['message'] = 'Settings saved: ' . $filename;
 	redirectAdmin ();
 }
 /*
  * ============================================================
- * DEPLACEMENT ↑ ↓
+ * MOVE ↑ ↓
  * ============================================================
  */
 if (isset ( $_POST ['move'] )) {
@@ -715,10 +723,10 @@ if (isset ( $_POST ['move'] )) {
 	$filename = basename ( $_POST ['file'] ?? '');
 	$direction = $_POST ['direction'] ?? '';
 	if (! isset ( $config [$zone] [$filename] )) {
-		die ( 'Média invalide.' );
+		die ( 'Invalid media item.' );
 	}
 	/*
-	 * Liste triée par ordre
+	 * List sorted by configured order
 	 */
 	uasort ( $config [$zone], function ($a, $b) {
 		return ( int ) $a ['order'] <=> ( int ) $b ['order'];
@@ -739,7 +747,7 @@ if (isset ( $_POST ['move'] )) {
 }
 /*
  * ============================================================
- * SUPPRESSION
+ * DELETION
  * ============================================================
  */
 if (isset ( $_POST ['delete'] )) {
@@ -747,18 +755,18 @@ if (isset ( $_POST ['delete'] )) {
 	$zone = $_POST ['zone'] ?? '';
 	$filename = basename ( $_POST ['file'] ?? '');
 	if (! isset ( $zones [$zone] )) {
-		die ( 'Zone invalide.' );
+		die ( 'Invalid zone.' );
 	}
 	$path = $zones [$zone] . '/' . $filename;
 	if ($filename !== '' && is_file ( $path )) {
 		unlink ( $path );
 	}
 	/*
-	 * Suppression config
+	 * Remove from configuration
 	 */
 	unset ( $config [$zone] [$filename] );
 	/*
-	 * Renumérotation
+	 * Renumbering
 	 */
 	uasort ( $config [$zone], function ($a, $b) {
 		return ( int ) $a ['order'] <=> ( int ) $b ['order'];
@@ -769,7 +777,7 @@ if (isset ( $_POST ['delete'] )) {
 	}
 	unset ( $cfg );
 	saveConfig ( $configFile, $config );
-	$_SESSION ['message'] = 'Média supprimé : ' . $filename;
+	$_SESSION ['message'] = 'Media deleted : ' . $filename;
 	redirectAdmin ();
 }
 /*
@@ -783,32 +791,45 @@ if (! empty ( $_SESSION ['message'] )) {
 }
 /*
  * ============================================================
- * LISTE POUR AFFICHAGE
+ * DISPLAY LIST
  * ============================================================
  */
 function getMediaStatus(array $file): array {
 	if (! $file ['active']) {
 		return [ 
 				'class' => 'disabled',
-				'label' => 'DÉSACTIVÉ' 
+				'label' => 'DISABLED' 
 		];
 	}
-	$today = (new DateTimeImmutable ( 'today', new DateTimeZone ( 'Europe/Paris' ) ))->format ( 'Y-m-d' );
+	
+		$timezoneName =
+			$config['settings']['timezone'] ?? 'UTC';
+
+		try {
+			$timezone = new DateTimeZone($timezoneName);
+		} catch (Exception $e) {
+			$timezone = new DateTimeZone('UTC');
+		}
+
+		$today = (
+			new DateTimeImmutable('today', $timezone)
+		)->format('Y-m-d');
+	
 	if ($file ['start'] !== '' && $today < $file ['start']) {
 		return [ 
 				'class' => 'future',
-				'label' => 'À VENIR' 
+				'label' => 'UPCOMING' 
 		];
 	}
 	if ($file ['end'] !== '' && $today > $file ['end']) {
 		return [ 
 				'class' => 'expired',
-				'label' => 'EXPIRÉ' 
+				'label' => 'EXPIRED' 
 		];
 	}
 	return [ 
 			'class' => 'displayed',
-			'label' => 'AFFICHÉ' 
+			'label' => 'DISPLAYED' 
 	];
 }
 function buildDisplayList(array $physical, array $config): array {
@@ -839,7 +860,7 @@ $rightFiles = buildDisplayList ( getPhysicalFiles ( $zones ['right'] ), $config 
 
 <meta name="viewport" content="width=device-width, initial-scale=1">
 
-<title>Administration Kiosk</title>
+<title>KioskLite Administration</title>
 
 <style>
 * {
@@ -1031,13 +1052,11 @@ button {
 
 		<div>
 
-			<h1>Administration Kiosk</h1>
-
-			<div>Centre Social de Montbrison</div>
+			<h1>KioskLite Administration</h1>
 
 		</div>
 
-		<a href="?logout=1" class="logout"> Déconnexion </a>
+		<a href="?logout=1" class="logout"> Log out </a>
 
 	</header>
 
@@ -1062,7 +1081,7 @@ button {
     value="<?= htmlspecialchars($_SESSION['csrf']) ?>"
 >
 
-<strong>Affichage général</strong>
+<strong>General Display</strong>
 <br>
 
 <label class="title-setting">
@@ -1085,7 +1104,7 @@ button {
             ? 'checked'
             : '' ?>
     >
-    Date et heure
+    Date and time
 </label>
 
 <br>
@@ -1098,14 +1117,14 @@ button {
             ? 'checked'
             : '' ?>
     >
-    Météo
+    Weather
 </label>
 <br>
 
 <div class="weather-settings">
 
 <label>
-    Localité
+    Location
     <input
         type="text"
         name="weather_name"
@@ -1132,7 +1151,19 @@ button {
         value="<?= htmlspecialchars($config['settings']['weather_lon']) ?>"
     >
 </label>
-
+<label>
+    Timezone
+    <input
+        type="text"
+        name="timezone"
+        value="<?= htmlspecialchars(
+            $config['settings']['timezone'] ?? 'UTC',
+            ENT_QUOTES,
+            'UTF-8'
+        ) ?>"
+        placeholder="Europe/Paris"
+    >
+</label>
 </div>
 
 <br>
@@ -1142,7 +1173,7 @@ button {
     name="save_settings"
     value="1"
 >
-Enregistrer
+Save
 </button>
 
 </form>
@@ -1177,9 +1208,9 @@ foreach ( [
 				<span>
 <?= $title ?> ->
 </span> <span class="zone-counter">
-<?= $displayedCount ?> actif<?= $displayedCount > 1 ? 's' : '' ?>
+<?= $displayedCount ?> active<?= $displayedCount > 1 ? 's' : '' ?>
 /
-<?= $totalCount ?> média<?= $totalCount > 1 ? 's' : '' ?>
+<?= $totalCount ?> media item<?= $totalCount !== 1 ? 's' : '' ?>
 </span>
 
 			</h2>
@@ -1191,14 +1222,14 @@ foreach ( [
 					type="hidden" name="zone" value="<?= $zone ?>"> <input type="file"
 					name="media" accept="image/*,video/mp4,video/webm" required>
 
-				<button type="submit" name="upload" value="1">+ Ajouter</button>
+				<button type="submit" name="upload" value="1">+ Add</button>
 
 			</form>
 
 
 <?php if (!$files): ?>
 
-<div class="empty">Aucun média</div>
+<div class="empty">No media</div>
 
 <?php endif; ?>
 
@@ -1244,7 +1275,7 @@ foreach ( [
 
 					<div class="controls">
 
-						<!-- ========================================================
+<!-- ========================================================
      PARAMETRES DU MEDIA
 ========================================================= -->
 
@@ -1259,11 +1290,11 @@ foreach ( [
 
 							<div class="settings-line">
 
-								<label> Durée </label> <input class="duration" type="number"
+								<label> Duration </label> <input class="duration" type="number"
 									name="duration" min="1" max="600"
-									value="<?= $file['duration'] ?>"> <span>secondes</span> <label
+									value="<?= $file['duration'] ?>"> <span>seconds</span> <label
 									class="active-label"> <input type="checkbox" name="active"
-									value="1" <?= $file['active'] ? 'checked' : '' ?>> Actif
+									value="1" <?= $file['active'] ? 'checked' : '' ?>> Active
 
 								</label> <span class="status <?= $status['class'] ?>">
 <?= $status['label'] ?>
@@ -1274,15 +1305,15 @@ foreach ( [
 
 							<div class="settings-line">
 
-								<label> Du </label> <input class="date" type="date" name="start"
-									value="<?= htmlspecialchars($file['start']) ?>"> <label> Au </label>
+								<label> From </label> <input class="date" type="date" name="start"
+									value="<?= htmlspecialchars($file['start']) ?>"> <label> To </label>
 
 								<input class="date" type="date" name="end"
 									value="<?= htmlspecialchars($file['end']) ?>">
 
 
 								<button class="save" type="submit" name="save" value="1">
-									Enregistrer</button>
+									Save</button>
 
 							</div>
 
@@ -1290,12 +1321,12 @@ foreach ( [
 
 
 						<!-- ========================================================
-     ORDRE
+     ORDER
 ========================================================= -->
 
 						<div class="move-controls">
 
-							<!-- MONTER -->
+							<!-- Move up -->
 
 							<form method="post">
 
@@ -1307,12 +1338,12 @@ foreach ( [
 									type="hidden" name="direction" value="up">
 
 								<button class="move" type="submit" name="move" value="1"
-									title="Monter">↑ Monter</button>
+									title="Move up">↑ Move Up</button>
 
 							</form>
 
 
-							<!-- DESCENDRE -->
+							<!-- Move Down -->
 
 							<form method="post">
 
@@ -1324,7 +1355,7 @@ foreach ( [
 									type="hidden" name="direction" value="down">
 
 								<button class="move" type="submit" name="move" value="1"
-									title="Descendre">↓ Descendre</button>
+									title="Move down">↓ Move Down</button>
 
 							</form>
 
@@ -1332,7 +1363,7 @@ foreach ( [
 							<!-- SUPPRIMER -->
 
 							<form method="post"
-								onsubmit="return confirm('Supprimer ce média ?');">
+								onsubmit="return confirm('Delete this media item?');">
 
 								<input type="hidden" name="csrf"
 									value="<?= htmlspecialchars($_SESSION['csrf']) ?>"> <input
@@ -1341,7 +1372,7 @@ foreach ( [
 									value="<?= htmlspecialchars($file['name']) ?>">
 
 								<button class="delete" type="submit" name="delete" value="1">
-									Supprimer</button>
+									Delete</button>
 
 							</form>
 
