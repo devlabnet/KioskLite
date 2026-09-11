@@ -45,5 +45,4 @@ return [
 	'Timezone'  => 'fuseau horaire',
     'LeftArea'  => 'Zone Gauche',
     'RightArea'  => 'Zone Droite',
-
 ];

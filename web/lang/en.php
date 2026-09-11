@@ -24,7 +24,6 @@ return [
     'UPCOMING'  => 'UPCOMING',
     'EXPIRED'  => 'EXPIRED',
     'DISPLAYED'  => 'DISPLAYED',
-    'KioskLite_Administration'  => 'KioskLite Administration',
     'Log_out'  => 'Log out',
     'General_Display'  => 'General Display',
     'Date_and_time'  => 'Date and time',
