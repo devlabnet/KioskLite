@@ -1,5 +1,6 @@
 <?php
-session_start ();
+require_once 'i18n.php'; 
+//session_start ();
 /*
  * ============================================================
  * CONFIGURATION
@@ -293,7 +294,7 @@ if (empty ( $_SESSION ['kiosk_admin'] )) {
 
 <meta name="viewport" content="width=device-width, initial-scale=1">
 
-<title>KioskLite Administration</title>
+<title><?php echo __('KioskLite_Admin'); ?></title>
 
 <style>
 body {
@@ -492,7 +493,7 @@ button {
 
 		<h1>Kiosk</h1>
 
-		<p>Media Administration</p>
+		<p><?php echo __('Media_Admin'); ?></p>
 
 <?php if ($error): ?>
 
@@ -587,8 +588,7 @@ if (isset($_POST['save_settings'])) {
 			$config
 			);
 
-	$_SESSION['message'] =
-	'Display settings saved.';
+	$_SESSION['message'] = __('Display_settings_saved');
 
 	redirectAdmin();
 }
@@ -604,12 +604,12 @@ if (isset ( $_POST ['upload'] )) {
 		die ( 'Invalid zone.' );
 	}
 	if (! isset ( $_FILES ['media'] ) || $_FILES ['media'] ['error'] !== UPLOAD_ERR_OK) {
-		$_SESSION ['message'] = 'An error occurred while uploading the file.';
+		$_SESSION ['message'] = __('file_upload_error');
 		redirectAdmin ();
 	}
 	$upload = $_FILES ['media'];
 	if ($upload ['size'] > MAX_UPLOAD_SIZE) {
-		$_SESSION ['message'] = 'File is too large.';
+		$_SESSION ['message'] = __('file_too_large');
 		redirectAdmin ();
 	}
 	$finfo = new finfo ( FILEINFO_MIME_TYPE );
@@ -623,7 +623,7 @@ if (isset ( $_POST ['upload'] )) {
 			'video/webm' => 'webm' 
 	];
 	if (! isset ( $allowed [$mime] )) {
-		$_SESSION ['message'] = 'Unsupported file format : ' . $mime;
+		$_SESSION ['message'] = __('bad_format') .': '. $mime;
 		redirectAdmin ();
 	}
 	$extension = $allowed [$mime];
@@ -631,7 +631,7 @@ if (isset ( $_POST ['upload'] )) {
 	$filename = uniqueFilename ( $zones [$zone], $base, $extension );
 	$destination = $zones [$zone] . '/' . $filename;
 	if (! move_uploaded_file ( $upload ['tmp_name'], $destination )) {
-		$_SESSION ['message'] = 'Unable to save the file.';
+		$_SESSION ['message'] =  __('save_error') ;
 		redirectAdmin ();
 	}
 	/*
@@ -649,7 +649,7 @@ if (isset ( $_POST ['upload'] )) {
 			'end' => '' 
 	];
 	saveConfig ( $configFile, $config );
-	$_SESSION ['message'] = 'Media added : ' . $filename;
+	$_SESSION ['message'] =  __('Media_added') .': '. $filename;
 	redirectAdmin ();
 }
 /*
@@ -689,18 +689,18 @@ if (isset ( $_POST ['save'] )) {
 		return $d !== false && $d->format ( 'Y-m-d' ) === $date;
 	};
 	if (! $validDate ( $start )) {
-		$_SESSION ['message'] = 'Invalid start date.';
+		$_SESSION ['message'] =__('Invalid_start_date');
 		redirectAdmin ();
 	}
 	if (! $validDate ( $end )) {
-		$_SESSION ['message'] = 'Invalid end date.';
+		$_SESSION ['message'] =__('Invalid_end_date');
 		redirectAdmin ();
 	}
 	/*
 	 * The end date cannot be earlier than the start date.
 	 */
 	if ($start !== '' && $end !== '' && $end < $start) {
-		$_SESSION ['message'] = 'The end date cannot be earlier than the start date.';
+		$_SESSION ['message'] = __('bad_start_end_date');
 		redirectAdmin ();
 	}
 	/* ---------- Save ---------- */
@@ -709,7 +709,7 @@ if (isset ( $_POST ['save'] )) {
 	$config [$zone] [$filename] ['start'] = $start;
 	$config [$zone] [$filename] ['end'] = $end;
 	saveConfig ( $configFile, $config );
-	$_SESSION ['message'] = 'Settings saved: ' . $filename;
+	$_SESSION ['message'] = __('Settings_saved') . ': ' . $filename;
 	redirectAdmin ();
 }
 /*
@@ -777,7 +777,7 @@ if (isset ( $_POST ['delete'] )) {
 	}
 	unset ( $cfg );
 	saveConfig ( $configFile, $config );
-	$_SESSION ['message'] = 'Media deleted : ' . $filename;
+	$_SESSION ['message'] =  __('Media_deleted').': '. $filename;
 	redirectAdmin ();
 }
 /*
@@ -798,7 +798,7 @@ function getMediaStatus(array $file): array {
 	if (! $file ['active']) {
 		return [ 
 				'class' => 'disabled',
-				'label' => 'DISABLED' 
+				'label' => __('DISABLED') 
 		];
 	}
 	
@@ -818,18 +818,18 @@ function getMediaStatus(array $file): array {
 	if ($file ['start'] !== '' && $today < $file ['start']) {
 		return [ 
 				'class' => 'future',
-				'label' => 'UPCOMING' 
+				'label' => __('UPCOMING') 
 		];
 	}
 	if ($file ['end'] !== '' && $today > $file ['end']) {
 		return [ 
 				'class' => 'expired',
-				'label' => 'EXPIRED' 
+				'label' =>__('EXPIRED')
 		];
 	}
 	return [ 
 			'class' => 'displayed',
-			'label' => 'DISPLAYED' 
+			'label' => __('DISPLAYED')
 	];
 }
 function buildDisplayList(array $physical, array $config): array {
@@ -860,7 +860,7 @@ $rightFiles = buildDisplayList ( getPhysicalFiles ( $zones ['right'] ), $config 
 
 <meta name="viewport" content="width=device-width, initial-scale=1">
 
-<title>KioskLite Administration</title>
+<title><?php echo __('KioskLite_Admin'); ?></title>
 
 <style>
 * {
@@ -1052,11 +1052,17 @@ button {
 
 		<div>
 
-			<h1>KioskLite Administration</h1>
+			<h1><?php echo __('KioskLite_Admin'); ?></h1>
 
 		</div>
 
-		<a href="?logout=1" class="logout"> Log out </a>
+		<a href="?logout=1" class="logout"> <?php echo __('Log_out'); ?> </a>
+
+    <!-- Language Switcher Links -->
+    <nav>
+        <a href="?lang=en" style="<?php echo $locale === 'en' ? 'font-weight:bold;' : ''; ?>">English</a> | 
+        <a href="?lang=fr" style="<?php echo $locale === 'fr' ? 'font-weight:bold;' : ''; ?>">Français</a>
+    </nav>
 
 	</header>
 
@@ -1081,7 +1087,7 @@ button {
     value="<?= htmlspecialchars($_SESSION['csrf']) ?>"
 >
 
-<strong>General Display</strong>
+<strong><?php echo __('General_Display'); ?></strong>
 <br>
 
 <label class="title-setting">
@@ -1104,7 +1110,7 @@ button {
             ? 'checked'
             : '' ?>
     >
-    Date and time
+	<?php echo __('Date_and_time'); ?>
 </label>
 
 <br>
@@ -1117,14 +1123,14 @@ button {
             ? 'checked'
             : '' ?>
     >
-    Weather
+	<?php echo __('Weather'); ?>
 </label>
 <br>
 
 <div class="weather-settings">
 
 <label>
-    Location
+	<?php echo __('Location'); ?>
     <input
         type="text"
         name="weather_name"
@@ -1152,7 +1158,7 @@ button {
     >
 </label>
 <label>
-    Timezone
+	<?php echo __('Timezone'); ?>
     <input
         type="text"
         name="timezone"
@@ -1173,7 +1179,7 @@ button {
     name="save_settings"
     value="1"
 >
-Save
+<?php echo __('Save'); ?>
 </button>
 
 </form>
@@ -1193,8 +1199,8 @@ function countDisplayedMedia(array $files): int {
 	return $count;
 }
 foreach ( [ 
-		'left' => 'Zone gauche',
-		'right' => 'Zone droite' 
+		'left' => __('LeftArea'),
+		'right' => __('RightArea')
 ] as $zone => $title ) :
 	$files = $zone === 'left' ? $leftFiles : $rightFiles;
 	$totalCount = count ( $files );
@@ -1208,9 +1214,9 @@ foreach ( [
 				<span>
 <?= $title ?> ->
 </span> <span class="zone-counter">
-<?= $displayedCount ?> active<?= $displayedCount > 1 ? 's' : '' ?>
+<?= $displayedCount ?> <?php echo __('active'); ?><?= $displayedCount > 1 ? 's' : '' ?>
 /
-<?= $totalCount ?> media item<?= $totalCount !== 1 ? 's' : '' ?>
+<?= $totalCount ?>  <?php echo __('media_item'); ?><?= $totalCount !== 1 ? 's' : '' ?>
 </span>
 
 			</h2>
@@ -1222,14 +1228,14 @@ foreach ( [
 					type="hidden" name="zone" value="<?= $zone ?>"> <input type="file"
 					name="media" accept="image/*,video/mp4,video/webm" required>
 
-				<button type="submit" name="upload" value="1">+ Add</button>
+				<button type="submit" name="upload" value="1">+ <?php echo __('Add'); ?></button>
 
 			</form>
 
 
 <?php if (!$files): ?>
 
-<div class="empty">No media</div>
+<div class="empty"><?php echo __('No_media'); ?></div>
 
 <?php endif; ?>
 
@@ -1290,11 +1296,11 @@ foreach ( [
 
 							<div class="settings-line">
 
-								<label> Duration </label> <input class="duration" type="number"
+								<label> <?php echo __('Duration'); ?> </label> <input class="duration" type="number"
 									name="duration" min="1" max="600"
-									value="<?= $file['duration'] ?>"> <span>seconds</span> <label
+									value="<?= $file['duration'] ?>"> <span><?php echo __('seconds'); ?> </span> <label
 									class="active-label"> <input type="checkbox" name="active"
-									value="1" <?= $file['active'] ? 'checked' : '' ?>> Active
+									value="1" <?= $file['active'] ? 'checked' : '' ?>> <?php echo __('active'); ?> 
 
 								</label> <span class="status <?= $status['class'] ?>">
 <?= $status['label'] ?>
@@ -1305,15 +1311,15 @@ foreach ( [
 
 							<div class="settings-line">
 
-								<label> From </label> <input class="date" type="date" name="start"
-									value="<?= htmlspecialchars($file['start']) ?>"> <label> To </label>
+								<label> <?php echo __('From'); ?> </label> <input class="date" type="date" name="start"
+									value="<?= htmlspecialchars($file['start']) ?>"> <label> <?php echo __('to'); ?></label>
 
 								<input class="date" type="date" name="end"
 									value="<?= htmlspecialchars($file['end']) ?>">
 
 
 								<button class="save" type="submit" name="save" value="1">
-									Save</button>
+									<?php echo __('Save'); ?></button>
 
 							</div>
 
@@ -1338,7 +1344,7 @@ foreach ( [
 									type="hidden" name="direction" value="up">
 
 								<button class="move" type="submit" name="move" value="1"
-									title="Move up">↑ Move Up</button>
+									title="Move up">↑ <?php echo __('Move_up'); ?></button>
 
 							</form>
 
@@ -1355,7 +1361,7 @@ foreach ( [
 									type="hidden" name="direction" value="down">
 
 								<button class="move" type="submit" name="move" value="1"
-									title="Move down">↓ Move Down</button>
+									title="Move down">↓  <?php echo __('Move_down'); ?></button>
 
 							</form>
 
@@ -1363,7 +1369,7 @@ foreach ( [
 							<!-- SUPPRIMER -->
 
 							<form method="post"
-								onsubmit="return confirm('Delete this media item?');">
+								onsubmit="return confirm('<?php echo __('Delete_Media_?'); ?>');">
 
 								<input type="hidden" name="csrf"
 									value="<?= htmlspecialchars($_SESSION['csrf']) ?>"> <input
@@ -1372,7 +1378,7 @@ foreach ( [
 									value="<?= htmlspecialchars($file['name']) ?>">
 
 								<button class="delete" type="submit" name="delete" value="1">
-									Delete</button>
+									<?php echo __('Delete'); ?></button>
 
 							</form>
 

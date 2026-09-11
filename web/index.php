@@ -1,4 +1,5 @@
 <?php
+require_once 'i18n.php'; 
 
 ?>
 
@@ -138,7 +139,7 @@ to {
 
 		<div id="clock" class="clock"></div>
 
-		<div id="weather" class="weather">Loading weather...</div>
+		<div id="weather" class="weather"><?php echo __('Loading_weather'); ?>...</div>
 	</div>
 
 	<div class="slides-container">
@@ -158,6 +159,14 @@ to {
 
 const API_REFRESH    = 30000;      // check every 30 seconds
 
+let currentVersion = null;
+
+let weatherSettings = {
+    name: "",
+    lat: null,
+    lon: null,
+    timezone: "UTC"
+};
 /* ============================================================
    Horloge
 ============================================================ */
@@ -549,14 +558,6 @@ const rightSlideshow =
    API fetch
 ============================================================ */
 
-let currentVersion = null;
-
-let weatherSettings = {
-    name: "",
-    lat: null,
-    lon: null,
-    timezone: "UTC"
-};
 
 async function updateSlides()
 {
@@ -685,30 +686,30 @@ async function updateWeather()
 
         const icons = {
             0: "☀️",
-            1: "🌤️",
+            1: "?️",
             2: "⛅",
             3: "☁️",
-            45: "🌫️",
-            48: "🌫️",
-            51: "🌦️",
-            53: "🌦️",
-            55: "🌧️",
-            61: "🌧️",
-            63: "🌧️",
-            65: "🌧️",
-            71: "🌨️",
-            73: "🌨️",
+            45: "?️",
+            48: "?️",
+            51: "?️",
+            53: "?️",
+            55: "?️",
+            61: "?️",
+            63: "?️",
+            65: "?️",
+            71: "?️",
+            73: "?️",
             75: "❄️",
-            80: "🌦️",
-            81: "🌧️",
-            82: "🌧️",
+            80: "?️",
+            81: "?️",
+            82: "?️",
             95: "⛈️",
             96: "⛈️",
             99: "⛈️"
         };
 
         const currentIcon =
-            icons[data.current.weather_code] || "🌡️";
+            icons[data.current.weather_code] || "?️";
 
         let html =
             `<strong>${weatherSettings.name}</strong> &nbsp;` +
@@ -729,7 +730,7 @@ async function updateWeather()
                 );
 
             const icon =
-                icons[data.daily.weather_code[i]] || "🌡️";
+                icons[data.daily.weather_code[i]] || "?️";
 
             const max =
                 Math.round(
