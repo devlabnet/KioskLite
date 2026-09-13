@@ -724,7 +724,7 @@ if (isset ( $_POST ['move'] )) {
 	$filename = basename ( $_POST ['file'] ?? '');
 	$direction = $_POST ['direction'] ?? '';
 	if (! isset ( $config [$zone] [$filename] )) {
-		die ( 'Invalid media item.' );
+		die(__('invalid_media'));
 	}
 	/*
 	 * List sorted by configured order
@@ -756,7 +756,7 @@ if (isset ( $_POST ['delete'] )) {
 	$zone = $_POST ['zone'] ?? '';
 	$filename = basename ( $_POST ['file'] ?? '');
 	if (! isset ( $zones [$zone] )) {
-		die ( 'Invalid zone.' );
+		die(__('invalid_zone'));
 	}
 	$path = $zones [$zone] . '/' . $filename;
 	if ($filename !== '' && is_file ( $path )) {
