@@ -71,7 +71,7 @@ KioskLite/
 ├── docs/
 │   ├── installation.md
 │   ├── configuration.md
-    └── hardware.md
+│   └── hardware.md
 │   └── backup-pishrink.md
 │
 ├── .gitignore
@@ -89,8 +89,9 @@ See:
 
 The web application can be deployed on any PHP-capable web server.
 
-More detailed server installation instructions will be added later.
+For web server deployment and configuration, see:
 
+[Web Configuration Guide](docs/configuration.md)
 ## Configuration
 
 Local configuration files are intentionally excluded from Git.

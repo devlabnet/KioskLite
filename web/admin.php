@@ -10,18 +10,16 @@ $localConfigFile =
 __DIR__ . '/config.local.php';
 
 if (!is_file($localConfigFile)) {
-	die('Configuration locale absente.');
+    die(__('missing_local_config'));
 }
-
 $localConfig =
 require $localConfigFile;
 
 if (
-		empty($localConfig['admin_password_hash'])
-		) {
-			die('Mot de passe administrateur non configuré.');
-		}
-
+    empty($localConfig['admin_password_hash'])
+) {
+    die(__('admin_password_not_configured'));
+}
 		$adminPasswordHash =
 		$localConfig['admin_password_hash'];
 		
@@ -64,10 +62,10 @@ function uniqueFilename(string $directory, string $base, string $extension): str
 	return $filename;
 }
 function formatSize(int $bytes): string {
-	if ($bytes >= 1024 * 1024) {
-		return number_format ( $bytes / (1024 * 1024), 1, ',', ' ' ) . ' Mo';
-	}
-	return number_format ( $bytes / 1024, 0, ',', ' ' ) . ' Ko';
+    if ($bytes >= 1024 * 1024) {
+        return number_format($bytes / (1024 * 1024), 1, '.', ' ') . ' MB';
+    }
+    return number_format($bytes / 1024, 0, '.', ' ') . ' KB';
 }
 /*
  * ============================================================
@@ -263,8 +261,8 @@ if (
 							$adminPasswordHash
 							)
 					) {
-						$_SESSION['kiosk_admin'] =
-						true;
+						session_regenerate_id(true);
+						$_SESSION['kiosk_admin'] =	true;
 						$_SESSION['csrf'] =
 						bin2hex(
 								random_bytes(32)
@@ -272,9 +270,9 @@ if (
 
 						redirectAdmin();
 					}
-					$error =
-					'Mot de passe incorrect.';
-		}if (isset ( $_GET ['logout'] )) {
+				$error = __('incorrect_password');
+		}
+if (isset ( $_GET ['logout'] )) {
 	session_destroy ();
 	redirectAdmin ();
 }
@@ -286,8 +284,7 @@ if (
 if (empty ( $_SESSION ['kiosk_admin'] )) {
 	?>
 <!DOCTYPE html>
-<html lang="fr">
-
+<html lang="<?= htmlspecialchars($locale) ?>">
 <head>
 
 <meta charset="utf-8">
@@ -505,11 +502,16 @@ button {
 
 <form method="post">
 
-			<input type="password" name="password" placeholder="Mot de passe"
-				autofocus required>
-
-			<button type="submit" name="login" value="1">Log in</button>
-
+			<input
+				type="password"
+				name="password"
+				placeholder="<?= htmlspecialchars(__('password')) ?>"
+				autofocus
+				required
+			>
+			<button type="submit" name="login" value="1">
+				<?= __('log_in') ?>
+			</button>
 		</form>
 
 	</div>
@@ -528,7 +530,7 @@ button {
  */
 function checkCsrf() {
 	if (empty ( $_POST ['csrf'] ) || empty ( $_SESSION ['csrf'] ) || ! hash_equals ( $_SESSION ['csrf'], $_POST ['csrf'] )) {
-		die ( 'Invalid request.' );
+		die(__('invalid_request'));
 	}
 }
 /*
@@ -689,11 +691,11 @@ if (isset ( $_POST ['save'] )) {
 		return $d !== false && $d->format ( 'Y-m-d' ) === $date;
 	};
 	if (! $validDate ( $start )) {
-		$_SESSION ['message'] =__('invalid_end_date');
+		$_SESSION['message'] = __('invalid_start_date');
 		redirectAdmin ();
 	}
 	if (! $validDate ( $end )) {
-		$_SESSION ['message'] =__('Invalid_end_date');
+		$_SESSION ['message'] =__('invalid_end_date');
 		redirectAdmin ();
 	}
 	/*
@@ -794,7 +796,7 @@ if (! empty ( $_SESSION ['message'] )) {
  * DISPLAY LIST
  * ============================================================
  */
-function getMediaStatus(array $file): array {
+function getMediaStatus(array $file, DateTimeZone $timezone): array {
 	if (! $file ['active']) {
 		return [ 
 				'class' => 'disabled',
@@ -802,15 +804,6 @@ function getMediaStatus(array $file): array {
 		];
 	}
 	
-		$timezoneName =
-			$config['settings']['timezone'] ?? 'UTC';
-
-		try {
-			$timezone = new DateTimeZone($timezoneName);
-		} catch (Exception $e) {
-			$timezone = new DateTimeZone('UTC');
-		}
-
 		$today = (
 			new DateTimeImmutable('today', $timezone)
 		)->format('Y-m-d');
@@ -847,13 +840,20 @@ function buildDisplayList(array $physical, array $config): array {
 	} );
 	return $physical;
 }
+$timezoneName =
+    $config['settings']['timezone'] ?? 'UTC';
+
+try {
+    $timezone = new DateTimeZone($timezoneName);
+} catch (Exception $e) {
+    $timezone = new DateTimeZone('UTC');
+}
 $leftFiles = buildDisplayList ( getPhysicalFiles ( $zones ['left'] ), $config ['left'] );
 $rightFiles = buildDisplayList ( getPhysicalFiles ( $zones ['right'] ), $config ['right'] );
 ?>
 <!DOCTYPE html>
 
-<html lang="fr">
-
+<html lang="<?= htmlspecialchars($locale) ?>">
 <head>
 
 <meta charset="utf-8">
@@ -1188,24 +1188,37 @@ button {
 <div class="zones">
 
 <?php
-function countDisplayedMedia(array $files): int {
-	$count = 0;
-	foreach ( $files as $file ) {
-		$status = getMediaStatus ( $file );
-		if ($status ['class'] === 'displayed') {
-			$count ++;
-		}
-	}
-	return $count;
+function countDisplayedMedia(
+    array $files,
+    DateTimeZone $timezone
+): int {
+    $count = 0;
+
+    foreach ($files as $file) {
+        $status = getMediaStatus(
+            $file,
+            $timezone
+        );
+
+        if ($status['class'] === 'displayed') {
+            $count++;
+        }
+    }
+
+    return $count;
 }
+
 foreach ( [ 
 		'left' => __('left_area'),
 		'right' => __('right_area')
 ] as $zone => $title ) :
 	$files = $zone === 'left' ? $leftFiles : $rightFiles;
 	$totalCount = count ( $files );
-	$displayedCount = countDisplayedMedia ( $files );
-	?>
+	$displayedCount =
+    countDisplayedMedia(
+        $files,
+        $timezone
+    );	?>
 
 <section class="zone">
 
@@ -1242,7 +1255,7 @@ foreach ( [
 
 <?php foreach ($files as $index => $file): ?>
 <?php
-		$status = getMediaStatus ( $file );
+		$status = getMediaStatus ( $file, $timezone );
 		?>
 <div class="media">
 
