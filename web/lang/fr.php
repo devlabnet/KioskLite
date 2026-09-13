@@ -49,4 +49,5 @@ return [
 	'admin_password_not_configured' => 'Mot de passe administrateur non configuré',
 	'incorrect_password' => 'Mot de passe incorrect',
 	'password' => 'Mot de passe',
+	'invalid_timezone' => 'Fuseau horaire invalide. Exemple : Europe/Paris',
 ];

@@ -577,8 +577,7 @@ if (isset($_POST['save_settings'])) {
 	$timezoneName =
 		trim($_POST['timezone'] ?? 'UTC');
 	if (!in_array($timezoneName, timezone_identifiers_list(), true)) {
-		$_SESSION['message'] =
-			'Invalid timezone. Example: Europe/Paris';
+		$_SESSION['message'] = __('invalid_timezone');
 		redirectAdmin();
 	}
 
@@ -603,7 +602,7 @@ if (isset ( $_POST ['upload'] )) {
 	checkCsrf ();
 	$zone = $_POST ['zone'] ?? '';
 	if (! isset ( $zones [$zone] )) {
-		die ( 'Invalid zone.' );
+		die(__('invalid_zone'));
 	}
 	if (! isset ( $_FILES ['media'] ) || $_FILES ['media'] ['error'] !== UPLOAD_ERR_OK) {
 		$_SESSION ['message'] = __('file_upload_error');
@@ -665,7 +664,7 @@ if (isset ( $_POST ['save'] )) {
 	$zone = $_POST ['zone'] ?? '';
 	$filename = basename ( $_POST ['file'] ?? '');
 	if (! isset ( $config [$zone] [$filename] )) {
-		die ( 'Invalid media item.' );
+		die(__('invalid_media'));
 	}
 	/* ---------- Duration ---------- */
 	$duration = ( int ) ($_POST ['duration'] ?? DEFAULT_DURATION);

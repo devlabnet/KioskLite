@@ -71,7 +71,7 @@ KioskLite/
 ├── docs/
 │   ├── installation.md
 │   ├── configuration.md
-│   └── hardware.md
+│   ├── hardware.md
 │   └── backup-pishrink.md
 │
 ├── .gitignore
@@ -92,6 +92,7 @@ The web application can be deployed on any PHP-capable web server.
 For web server deployment and configuration, see:
 
 [Web Configuration Guide](docs/configuration.md)
+
 ## Configuration
 
 Local configuration files are intentionally excluded from Git.
@@ -157,6 +158,7 @@ Images and videos uploaded through the administration interface are therefore no
 The Raspberry Pi starts a minimal X session automatically and runs Midori in fullscreen mode.
 
 The supplied X startup configuration automatically restarts Midori if the browser exits unexpectedly, allowing the kiosk to recover without restarting the Raspberry Pi.
+
 An example X startup configuration is provided in:
 
 ```text
