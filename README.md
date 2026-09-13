@@ -30,6 +30,8 @@ KioskLite currently supports:
 - browser-based administration interface
 - media upload and deletion
 - lightweight Raspberry Pi client configuration
+- multilingual interface support
+- English and French language files included
 
 ## Tested Hardware
 
@@ -39,7 +41,7 @@ KioskLite has been tested on:
 - Raspberry Pi 3 — working
 - Raspberry Pi Zero — experimental
 
-The Raspberry Pi 2 has been tested continuously for more than 2 days with no swap usage.
+The Raspberry Pi 2 has been tested continuously for several days with no swap usage.
 
 For details, see:
 
@@ -53,7 +55,11 @@ KioskLite/
 │   ├── index.php
 │   ├── admin.php
 │   ├── api.php
+│   ├── i18n.php
 │   ├── config.local.example.php
+│   ├── lang/
+│   │   ├── en.php
+│   │   └── fr.php
 │   └── media/
 │       ├── left/
 │       │   └── .gitkeep
@@ -62,10 +68,11 @@ KioskLite/
 │
 ├── raspberry/
 │   └── xinitrc.example
-│
 ├── docs/
 │   ├── installation.md
-│   └── hardware.md
+│   ├── configuration.md
+    └── hardware.md
+│   └── backup-pishrink.md
 │
 ├── .gitignore
 ├── LICENSE
@@ -104,6 +111,33 @@ and configure your local administrator password.
 
 Runtime configuration and uploaded media are also excluded from version control.
 
+For detailed configuration instructions, see:
+
+[Configuration Guide](docs/configuration.md)
+
+## Languages
+
+KioskLite includes a simple built-in internationalization system.
+
+Currently included languages:
+
+- English
+- French
+
+Language files are stored in:
+
+    web/lang/
+
+The language can be selected directly from the administration interface.
+
+The selected language is stored in the user session and in a browser cookie.
+
+Additional languages can be added by creating a new translation file based on:
+
+    web/lang/en.php
+
+Translation keys should remain unchanged; only the translated values need to be modified.
+
 ## Media
 
 Runtime media files are stored in:
@@ -119,8 +153,9 @@ Images and videos uploaded through the administration interface are therefore no
 
 ## Raspberry Pi Client
 
-The Raspberry Pi starts a minimal X session automatically and launches Midori in fullscreen mode.
+The Raspberry Pi starts a minimal X session automatically and runs Midori in fullscreen mode.
 
+The supplied X startup configuration automatically restarts Midori if the browser exits unexpectedly, allowing the kiosk to recover without restarting the Raspberry Pi.
 An example X startup configuration is provided in:
 
 ```text

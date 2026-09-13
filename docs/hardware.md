@@ -43,6 +43,9 @@ See [Installation Guide](installation.md) for details.
 
 ---
 
+Long-running tests showed that Midori may occasionally exit after several days of continuous operation.
+
+The supplied `.xinitrc` therefore automatically restarts Midori after a short delay while keeping Xorg and Openbox running.
 ## Raspberry Pi 3
 
 **Status: Tested and working**

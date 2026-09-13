@@ -28,7 +28,11 @@ The resulting structure should look like:
 index.php
 admin.php
 api.php
+i18n.php
 config.local.example.php
+lang/
+├── en.php
+└── fr.php
 media/
 ├── left/
 └── right/
@@ -178,7 +182,32 @@ The administration interface can be used to manage:
 
 Each display zone is managed independently.
 
-## 8. Media Scheduling
+## 8. Language Configuration
+
+KioskLite includes a lightweight internationalization system.
+
+English and French are currently included.
+
+Language files are stored in:
+
+    lang/en.php
+    lang/fr.php
+
+The language can be selected directly from the administration interface.
+
+The selected language is stored in the user session and in a browser cookie.
+
+The selected language is also used for the kiosk display, including date formatting and weather information.
+
+Additional languages can be added by creating a new translation file based on:
+
+    lang/en.php
+
+Keep the translation keys unchanged and translate only their values.
+
+The new language must also be added to the language selector and to the supported languages in `i18n.php`.
+
+## 9. Media Scheduling
 
 Each media item can optionally have:
 
@@ -199,7 +228,7 @@ DISABLED
 
 If only one display zone contains active media, KioskLite automatically expands that zone to use the available display area.
 
-## 9. Weather Configuration
+## 10. Weather Configuration
 
 KioskLite can display a weather forecast using Open-Meteo.
 
@@ -213,22 +242,27 @@ The administration interface allows you to configure:
 Internet access is required for weather updates.
 
 The kiosk itself can continue displaying locally hosted media if the weather service is temporarily unavailable.
+Weather forecast dates are calculated using the timezone configured in the General Display settings.
 
-## 10. Date and Time
+## 11. Date and Time
 
-The date display can be enabled or disabled from the administration interface.
+The date and time display can be enabled or disabled from the administration interface.
 
-Make sure the Raspberry Pi and web server have the correct system time and timezone.
+The installation timezone can also be configured from the administration interface.
 
-The reference KioskLite installation uses:
+Use a valid PHP timezone identifier, for example:
 
-```text
-Europe/Paris
-```
+    Europe/Paris
+    Europe/London
+    America/New_York
+    Asia/Tokyo
+    UTC
 
-Adjust the timezone as appropriate for your installation.
+The configured timezone is used for media scheduling, the kiosk clock and weather data.
 
-## 11. Security Recommendations
+The Raspberry Pi should still have a correctly synchronized system clock.
+
+## 12. Security Recommendations
 
 For installations accessible from the Internet:
 
@@ -241,19 +275,23 @@ For installations accessible from the Internet:
 
 The supplied `.gitignore` prevents local configuration, runtime configuration and uploaded media from being committed accidentally.
 
-## 12. Connecting the Raspberry Pi
+## 13. Connecting the Raspberry Pi
 
 Once the web application is working, configure the Raspberry Pi client to open the public kiosk URL.
 
 For example:
 
 ```sh
-exec midori -e Fullscreen https://example.org/kiosk/
+while true
+do
+    midori -e Fullscreen https://example.org/kiosk/
+    sleep 5
+done
 ```
 
 See the [Installation Guide](installation.md) for the complete Raspberry Pi setup.
 
-## 13. Backup
+## 14. Backup
 
 The important installation-specific data is:
 

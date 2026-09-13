@@ -140,8 +140,17 @@ openbox-session &
 
 sleep 1
 
-exec midori -e Fullscreen https://example.org/kiosk/
+while true
+do
+    midori -e Fullscreen https://example.org/kiosk/
+    sleep 5
+done
 ```
+The loop keeps the graphical session alive if Midori exits unexpectedly.
+
+Without this loop, `startx` may terminate when Midori exits because Midori is the main foreground client of the X session.
+
+KioskLite has been tested with Midori automatically restarting after a forced termination.
 
 ## 7. Raspberry Pi 2 display compatibility
 
@@ -185,8 +194,7 @@ After reboot:
 2. `startx` launches Xorg
 3. Openbox starts
 4. the mouse cursor is hidden
-5. Midori opens the configured KioskLite URL in fullscreen mode
-
+5. Midori opens the configured KioskLite URL in fullscreen mode and is automatically restarted if it exits
 ## 9. Basic checks
 
 To check system uptime:
@@ -208,6 +216,7 @@ ps aux --sort=-%mem | head
 ```
 
 On the tested Raspberry Pi 2, KioskLite typically uses only a fraction of the available 1 GB RAM and does not require swap during normal operation.
+Long-running tests on the Raspberry Pi 2 have shown stable memory usage over several days of continuous operation.
 
 ## 10. Optional: disable Wi-Fi when Ethernet is used
 
@@ -222,3 +231,4 @@ A scheduled daily reboot is not required by KioskLite.
 Initial testing used a daily reboot at 04:00, but later tests showed stable memory usage and no swap activity.
 
 For this reason, automatic rebooting is currently not recommended unless a specific installation requires it.
+The automatic Midori restart mechanism provides recovery from browser exits without requiring a full system reboot.

@@ -210,6 +210,7 @@ After restoring an image, verify that:
 - console autologin works
 - Xorg starts automatically
 - Midori starts in fullscreen mode
+- Midori automatically restarts if it exits unexpectedly
 - the KioskLite page loads
 - network connectivity works
 - media playback works
