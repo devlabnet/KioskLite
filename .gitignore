@@ -6,3 +6,9 @@ web/media/left/*
 
 web/media/right/*
 !web/media/right/.gitkeep
+
+# Local disk images and release archives
+IMAGE/
+KioskLite-v*/
+*.img
+*.img.xz

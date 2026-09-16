@@ -17,6 +17,27 @@ Test configuration:
 - Openbox
 - Midori / WebKitGTK
 
+### KioskLite v1.1.0 image
+
+The ready-to-use KioskLite v1.1.0 image has been fully tested on the
+Raspberry Pi 2 Model B Rev 1.1.
+
+Testing included:
+
+- Raspberry Pi Imager first-boot customization
+- automatic first-boot reboot sequence
+- Ethernet networking
+- configuration through `bootfs/kiosklite.conf`
+- empty and invalid URL handling
+- unreachable website handling
+- configuration editing from Windows
+- fullscreen slideshow operation
+- extended continuous operation
+
+The Raspberry Pi 2 Model B Rev 1.1 does **not** include built-in Wi-Fi.
+Use Ethernet or a compatible USB Wi-Fi adapter if wireless networking
+is required.
+
 The kiosk has been tested continuously with image and video slideshows.
 
 Typical memory usage is approximately 300 MB, with more than 600 MB remaining available. No swap usage has been observed during normal operation.
@@ -55,6 +76,9 @@ The same SD card image used on the Raspberry Pi 2 was inserted into a Raspberry 
 
 KioskLite displayed correctly using the same Xorg, Openbox and Midori configuration.
 
+The Raspberry Pi 3 includes built-in Wi-Fi, unlike the Raspberry Pi 2
+Model B used for the main KioskLite v1.1.0 validation.
+
 ---
 
 ## Raspberry Pi Zero
@@ -81,3 +105,8 @@ Further testing is planned.
 For a simple KioskLite display, a **Raspberry Pi 2 or newer** is recommended.
 
 KioskLite was specifically designed to avoid requiring recent or powerful Raspberry Pi hardware. Older boards that may no longer be suitable for a full desktop environment can still be useful as dedicated information displays.
+
+For network connectivity:
+
+- Raspberry Pi 2 Model B: Ethernet or compatible USB Wi-Fi adapter
+- Raspberry Pi 3 and later Wi-Fi-equipped models: Ethernet or built-in Wi-Fi

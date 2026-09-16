@@ -1,13 +1,96 @@
 # KioskLite Installation Guide
 
-This guide describes how to set up a lightweight Raspberry Pi kiosk using Raspberry Pi OS Lite, Xorg, Openbox and Midori.
+This guide describes two ways to install the KioskLite Raspberry Pi client:
 
-The configuration below has been tested successfully on:
+1. **Ready-to-use KioskLite image** — recommended for most users.
+2. **Manual installation** — useful for development, customization or installation on an existing Raspberry Pi OS Lite system.
+
+KioskLite uses a minimal graphical environment based on Xorg, Openbox and
+Midori instead of a full Raspberry Pi desktop.
+
+The KioskLite client has been tested successfully on:
 
 - Raspberry Pi 2 Model B
 - Raspberry Pi 3
 
-A Raspberry Pi Zero can also boot and run the same setup, but currently requires additional tuning. See the hardware notes for details.
+A Raspberry Pi Zero can also boot and run the same basic setup, but
+currently requires additional tuning. See the hardware notes for details.
+
+## Recommended Installation — KioskLite Image
+
+### 1. Write the image
+
+Use Raspberry Pi Imager to write the KioskLite image to an SD card.
+
+The current release image is:
+
+`KioskLite-v1.1.0.img`
+
+Raspberry Pi Imager customizations can be used to configure:
+
+- hostname
+- username and password
+- SSH access
+- Wi-Fi credentials on supported hardware
+- keyboard layout
+- country
+- timezone
+
+### 2. First boot
+
+Insert the SD card into the Raspberry Pi and power it on.
+
+During the first startup, Raspberry Pi Imager customizations are applied
+automatically.
+
+Several automatic reboots may occur. This is normal.
+
+When first-boot configuration is complete, KioskLite starts automatically.
+
+If no valid website has been configured yet, a local KioskLite
+configuration page is displayed.
+
+### 3. Configure the displayed website
+
+Power off the Raspberry Pi and insert the SD card into a computer.
+
+Open the `bootfs` partition and edit:
+
+`kiosklite.conf`
+
+Set the URL:
+
+`URL=https://www.example.com`
+
+The address must begin with `http://` or `https://`.
+
+Save the file, eject the SD card, insert it into the Raspberry Pi and
+power it on.
+
+KioskLite will automatically display the configured website in fullscreen
+mode.
+
+No SSH access or Linux configuration is required to change the URL.
+
+### 4. Windows warning
+
+Windows may display the following message after a KioskLite SD card is
+inserted:
+
+> There's a problem with this drive. Scan the drive now and fix it.
+
+This message can be ignored when accessing `bootfs` to edit
+`kiosklite.conf`.
+
+If Windows offers to **format** another partition on the card, do not
+format it. That partition contains the Linux filesystem used by KioskLite.
+
+---
+
+## Manual Installation
+
+The following procedure describes how to build the KioskLite client
+manually from Raspberry Pi OS Lite.
 
 ## 1. Install Raspberry Pi OS Lite
 
@@ -91,66 +174,44 @@ This starts the graphical environment only when the user logs in automatically o
 
 SSH sessions are not affected.
 
-## 6. Install the KioskLite X startup file
+## 6. Install the KioskLite client files
 
-Copy:
+The exact client files used by KioskLite v1.1.0 are provided in:
 
-```text
-raspberry/xinitrc.example
-```
+`raspberry/kiosklite/`
 
-to:
+Install the X startup file `raspberry/kiosklite/xinitrc` as:
 
-```text
-~/.xinitrc
-```
+`/home/kiosk/.xinitrc`
 
-For example:
+Make it executable with `chmod +x /home/kiosk/.xinitrc`.
 
-```bash
-cp raspberry/xinitrc.example ~/.xinitrc
-```
+Install `raspberry/kiosklite/config-error.html` as:
 
-Then make it executable:
+`/usr/local/share/kiosklite/config-error.html`
 
-```bash
-chmod +x ~/.xinitrc
-```
+The KioskLite URL configuration file is:
 
-Edit the file and replace:
+`raspberry/kiosklite/kiosklite.conf`
 
-```text
-https://example.org/kiosk/
-```
+On Raspberry Pi OS Bookworm, install it as:
 
-with the URL of your own KioskLite installation.
+`/boot/firmware/kiosklite.conf`
 
-The default configuration is:
+Edit the `URL=` line, for example:
 
-```sh
-#!/bin/sh
+`URL=https://www.example.com`
 
-xset s off
-xset s noblank
-xset -dpms
+The URL must begin with `http://` or `https://`.
 
-unclutter -idle 1 -root &
+The supplied `.xinitrc` reads this configuration automatically.
 
-openbox-session &
+If the configuration file is missing, the URL is empty, or the address
+does not begin with `http://` or `https://`, KioskLite displays the local
+configuration page.
 
-sleep 1
-
-while true
-do
-    midori -e Fullscreen https://example.org/kiosk/
-    sleep 5
-done
-```
-The loop keeps the graphical session alive if Midori exits unexpectedly.
-
-Without this loop, `startx` may terminate when Midori exits because Midori is the main foreground client of the X session.
-
-KioskLite has been tested with Midori automatically restarting after a forced termination.
+Midori runs inside a restart loop. If the browser exits or crashes,
+KioskLite waits briefly and starts it again automatically.
 
 ## 7. Raspberry Pi 2 display compatibility
 
@@ -194,7 +255,8 @@ After reboot:
 2. `startx` launches Xorg
 3. Openbox starts
 4. the mouse cursor is hidden
-5. Midori opens the configured KioskLite URL in fullscreen mode and is automatically restarted if it exits
+5. Midori reads the URL from `/boot/firmware/kiosklite.conf`, opens it in fullscreen mode and is automatically restarted if it exits
+
 ## 9. Basic checks
 
 To check system uptime:

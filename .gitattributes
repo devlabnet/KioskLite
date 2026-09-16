@@ -1,0 +1,11 @@
+# KioskLite - normalize text files to Unix LF line endings
+* text=auto
+
+*.sh   text eol=lf
+*.php  text eol=lf
+*.md   text eol=lf
+*.txt  text eol=lf
+*.json text eol=lf
+
+# KioskLite Raspberry Pi scripts/configuration
+*.conf text eol=lf

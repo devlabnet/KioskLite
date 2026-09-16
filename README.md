@@ -1,21 +1,101 @@
 # KioskLite
 
-KioskLite is a lightweight web-based digital signage system designed to run on older Raspberry Pi hardware.
+**English** | [Français](README.fr.md)
 
-It was created to provide a simple and low-resource information display using:
+KioskLite is a lightweight Raspberry Pi web kiosk and digital signage
+system designed to run even on older Raspberry Pi hardware.
 
-- Raspberry Pi OS Lite
-- Xorg
-- Openbox
-- Midori / WebKitGTK
-- PHP
-- a standard web server
+Flash the image, edit one text file, power on the Raspberry Pi — that's it.
 
-The Raspberry Pi only acts as a lightweight display client. The kiosk content, configuration and media are hosted on a web server.
+KioskLite can display any HTTP or HTTPS website in fullscreen mode.
+It also includes an optional PHP digital signage application with
+slideshow management and a browser-based administration interface.
 
-## Features
+## Quick Start
 
-KioskLite currently supports:
+### 1. Flash the KioskLite image
+
+Use Raspberry Pi Imager to write the KioskLite image to an SD card.
+
+Raspberry Pi Imager customizations can be used to configure the hostname,
+username and password, SSH, Wi-Fi credentials on supported hardware,
+keyboard layout, country and timezone.
+
+Several automatic reboots may occur during the first startup. This is normal.
+
+### 2. Configure the website
+
+Insert the SD card into a computer and open the `bootfs` partition.
+
+Edit the file:
+
+`kiosklite.conf`
+
+Set the URL you want KioskLite to display:
+
+`URL=https://www.example.com`
+
+The address must begin with `http://` or `https://`.
+
+Save the file and eject the SD card.
+
+### 3. Start KioskLite
+
+Insert the SD card into the Raspberry Pi and power it on.
+
+KioskLite automatically starts its minimal graphical environment and opens
+the configured website in Midori fullscreen mode.
+
+No SSH or Linux configuration is required to change the displayed URL.
+
+### Missing or invalid URL
+
+If `kiosklite.conf` is missing, `URL=` is empty, or the address does not
+begin with `http://` or `https://`, KioskLite displays a local configuration
+page.
+
+If the address is valid but the website cannot be reached because of a
+network, DNS or server problem, Midori displays its normal network error page.
+
+### Windows note
+
+After inserting a KioskLite SD card into a Windows PC, Windows may display:
+
+> There's a problem with this drive. Scan the drive now and fix it.
+
+This message can be ignored when accessing the `bootfs` partition to edit
+`kiosklite.conf`.
+
+If Windows offers to **format** another partition on the SD card, do not
+format it. KioskLite also contains a Linux filesystem that Windows does not
+read natively.
+
+## Raspberry Pi Client Features
+
+The KioskLite Raspberry Pi client provides:
+
+- lightweight Raspberry Pi OS Bookworm 32-bit base
+- minimal Xorg graphical environment
+- Openbox window manager
+- Midori fullscreen browser
+- automatic browser restart after an exit or crash
+- screen blanking and power management disabled
+- automatic mouse cursor hiding
+- URL configuration from the `bootfs` partition
+- configuration editable from Windows
+- local configuration page for missing or invalid URLs
+- Raspberry Pi Imager first-boot customization support
+- volatile systemd journal in the release image
+
+KioskLite can display any HTTP or HTTPS website. The KioskLite web
+application is optional.
+
+## Optional Web Application
+
+The repository also contains a lightweight PHP digital signage application
+in the `web/` directory.
+
+It provides:
 
 - two independent slideshow zones
 - images and videos
@@ -29,9 +109,9 @@ KioskLite currently supports:
 - optional weather display using Open-Meteo
 - browser-based administration interface
 - media upload and deletion
-- lightweight Raspberry Pi client configuration
-- multilingual interface support
-- English and French language files included
+- English and French localization
+
+No database is required.
 
 ## Tested Hardware
 
@@ -41,7 +121,13 @@ KioskLite has been tested on:
 - Raspberry Pi 3 — working
 - Raspberry Pi Zero — experimental
 
-The Raspberry Pi 2 has been tested continuously for several days with no swap usage.
+The KioskLite v1.1.0 ready-to-use image has been validated on a
+Raspberry Pi 2 Model B, including a complete first boot using
+Raspberry Pi Imager customizations.
+
+Wi-Fi requires a Raspberry Pi with built-in Wi-Fi or a compatible
+USB Wi-Fi adapter. Ethernet can be used on models without Wi-Fi
+hardware.
 
 For details, see:
 
@@ -51,6 +137,13 @@ For details, see:
 
 ```text
 KioskLite/
+├── raspberry/
+│   ├── kiosklite/
+│   │   ├── config-error.html
+│   │   ├── kiosklite.conf
+│   │   └── xinitrc
+│   └── xinitrc.example
+│
 ├── web/
 │   ├── index.php
 │   ├── admin.php
@@ -66,28 +159,40 @@ KioskLite/
 │       └── right/
 │           └── .gitkeep
 │
-├── raspberry/
-│   └── xinitrc.example
 ├── docs/
 │   ├── installation.md
 │   ├── configuration.md
 │   ├── hardware.md
 │   └── backup-pishrink.md
 │
-├── .gitignore
+├── CHANGELOG.md
+├── README.md
+├── README.fr.md
 ├── LICENSE
-└── README.md
+├── .gitignore
+└── .gitattributes
 ```
 
 ## Installation
 
-The Raspberry Pi client uses a minimal graphical environment instead of a full desktop.
+The easiest way to install KioskLite is to use the ready-to-use
+KioskLite disk image with Raspberry Pi Imager.
 
-See:
+After writing the image to an SD card, the displayed website can be
+configured simply by editing `kiosklite.conf` on the `bootfs`
+partition.
+
+No manual Linux configuration is required when using the release image.
+
+KioskLite can also be installed manually on Raspberry Pi OS Lite
+using Xorg, Openbox and Midori.
+
+For manual installation and technical details, see:
 
 [Installation Guide](docs/installation.md)
 
-The web application can be deployed on any PHP-capable web server.
+The optional web application can be deployed on any PHP-capable
+web server.
 
 For web server deployment and configuration, see:
 
@@ -95,25 +200,44 @@ For web server deployment and configuration, see:
 
 ## Configuration
 
-Local configuration files are intentionally excluded from Git.
+### Raspberry Pi client
+
+The website displayed by KioskLite is configured in:
+
+`/boot/firmware/kiosklite.conf`
+
+The same file is directly accessible on the `bootfs` partition when
+the SD card is inserted into a Windows PC.
+
+Example:
+
+`URL=https://www.example.com`
+
+Lines beginning with `#` are comments.
+
+The URL must begin with `http://` or `https://`.
+
+Configuration files edited under Windows are supported.
+
+### Optional web application
+
+Local web application configuration files are intentionally excluded
+from Git.
 
 The repository includes:
 
-```text
-web/config.local.example.php
-```
+`web/config.local.example.php`
 
 Copy it to:
 
-```text
-web/config.local.php
-```
+`web/config.local.php`
 
 and configure your local administrator password.
 
-Runtime configuration and uploaded media are also excluded from version control.
+Runtime configuration and uploaded media are also excluded from
+version control.
 
-For detailed configuration instructions, see:
+For detailed web application configuration instructions, see:
 
 [Configuration Guide](docs/configuration.md)
 
@@ -155,25 +279,66 @@ Images and videos uploaded through the administration interface are therefore no
 
 ## Raspberry Pi Client
 
-The Raspberry Pi starts a minimal X session automatically and runs Midori in fullscreen mode.
+The Raspberry Pi starts a minimal X session automatically and runs
+Midori in fullscreen mode.
 
-The supplied X startup configuration automatically restarts Midori if the browser exits unexpectedly, allowing the kiosk to recover without restarting the Raspberry Pi.
+In KioskLite v1.1.0, the browser URL is read from
+`/boot/firmware/kiosklite.conf` instead of being hard-coded in
+`.xinitrc`.
 
-An example X startup configuration is provided in:
+The supplied X startup configuration automatically restarts Midori
+if the browser exits unexpectedly, allowing the kiosk to recover
+without restarting the Raspberry Pi.
 
-```text
-raspberry/xinitrc.example
-```
+The exact files used by the v1.1.0 release image are available in:
 
-Replace the example kiosk URL with the URL of your own KioskLite installation.
+`raspberry/kiosklite/`
+
+They include:
+
+- `xinitrc`
+- `kiosklite.conf`
+- `config-error.html`
+
+The older `raspberry/xinitrc.example` file is retained as a simple
+reference for manual installations.
+
+## Releases
+
+See [CHANGELOG.md](CHANGELOG.md) for the version history.
+
+### KioskLite v1.1.0
+
+Release date: **2026-09-16**
+
+Image:
+
+`KioskLite-v1.1.0.img`
+
+Image size:
+
+`5830103552 bytes`
+
+SHA-256:
+
+`7f13886c194eea58ecb935a2fba2b3829b58f592ea3342600ee8aa78cf267b37`
+
+Always verify the checksum of a downloaded image before writing it
+to an SD card.
 
 ## Project Status
 
-KioskLite is currently under active development.
+KioskLite is under active development.
 
-The current PHP version is the first public version of the project.
+Version 1.1.0 provides a simple and tested Raspberry Pi web kiosk
+client whose URL can be configured directly from the SD card boot
+partition.
 
-Future versions may include additional features and alternative server implementations.
+The PHP digital signage application remains available as an optional
+content server.
+
+Future versions may include additional features and alternative
+server implementations.
 
 ## License
 

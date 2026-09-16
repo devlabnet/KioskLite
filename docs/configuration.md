@@ -1,6 +1,6 @@
 # KioskLite Web Configuration
 
-This guide describes how to deploy and configure the PHP web application used by KioskLite.
+This guide describes how to deploy and configure the optional PHP web application included with KioskLite.
 
 The web application contains both the public kiosk display and the administration interface.
 
@@ -277,19 +277,25 @@ The supplied `.gitignore` prevents local configuration, runtime configuration an
 
 ## 13. Connecting the Raspberry Pi
 
-Once the web application is working, configure the Raspberry Pi client to open the public kiosk URL.
+Once the web application is working, configure the KioskLite Raspberry Pi
+client to open the public kiosk URL.
+
+With KioskLite v1.1.0, the displayed URL is configured in:
+
+`/boot/firmware/kiosklite.conf`
 
 For example:
 
-```sh
-while true
-do
-    midori -e Fullscreen https://example.org/kiosk/
-    sleep 5
-done
-```
+`URL=https://example.org/kiosk/`
 
-See the [Installation Guide](installation.md) for the complete Raspberry Pi setup.
+The configuration file is also accessible from the `bootfs` partition,
+allowing the URL to be changed from a Windows PC without SSH or Linux access.
+
+The Raspberry Pi client automatically reads this file and opens the
+configured URL in Midori fullscreen mode.
+
+See the [Installation Guide](installation.md) for the complete Raspberry Pi
+setup.
 
 ## 14. Backup
 

@@ -1,0 +1,50 @@
+#!/bin/sh
+# 1. Disable screensavers and power-saving blank screen routines
+xset s off
+xset s noblank
+xset -dpms
+# 2. Hide the mouse pointer after 1 second of stillness
+unclutter -idle 1 -root &
+# 3. Spin up the ultra-light window composition layer in the background
+openbox-session &
+# 4. Timing guard. It ensures the graphics desktop environment (Openbox) is completely up, active, and ready to catch Midori's layout request
+sleep 1
+# Load KioskLite display configuration
+. "$HOME/kiosk.conf"
+# 5. Fire up Midori cleanly stretched into an isolated full screen container
+# ------------------------------------------------------------
+# KioskLite configuration
+# ------------------------------------------------------------
+
+CONFIG="/boot/firmware/kiosklite.conf"
+ERROR_PAGE="file:///usr/local/share/kiosklite/config-error.html"
+
+URL=""
+
+# Read the first URL= entry from kiosklite.conf.
+if [ -r "$CONFIG" ]; then
+    URL=$(sed -n \
+        's/^[[:space:]]*URL[[:space:]]*=[[:space:]]*//p' \
+        "$CONFIG" | head -n 1)
+fi
+
+# Remove possible CR character from a file edited under Windows.
+URL=$(printf '%s' "$URL" | tr -d '\r')
+
+# Accept only HTTP or HTTPS URLs.
+case "$URL" in
+    http://*|https://*)
+        KIOSK_URL="$URL"
+        ;;
+    *)
+        KIOSK_URL="$ERROR_PAGE"
+        ;;
+esac
+
+# Keep Midori running.
+# If Midori exits or crashes, restart it after a short delay.
+while true
+do
+    midori -e Fullscreen "$KIOSK_URL"
+    sleep 5
+done

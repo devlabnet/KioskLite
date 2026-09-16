@@ -249,9 +249,19 @@ Keep the uncompressed image until you have verified that the restored SD card bo
 
 Raw Raspberry Pi images should **not** be committed directly to the Git repository.
 
-If a preconfigured KioskLite Raspberry Pi image is provided in the future, it should be distributed separately, for example as a GitHub Release asset.
+Starting with KioskLite v1.1.0, ready-to-use Raspberry Pi images are distributed separately from the source code.
 
-Source code and documentation should remain in the normal Git repository.
+Source code and documentation remain in the normal Git repository.
+
+Release images should be accompanied by a SHA-256 checksum so that the downloaded file can be verified before it is written to an SD card.
+
+For KioskLite v1.1.0:
+
+`KioskLite-v1.1.0.img`
+
+SHA-256:
+
+`7f13886c194eea58ecb935a2fba2b3829b58f592ea3342600ee8aa78cf267b37`
 
 ## 12. Important Security Note
 
