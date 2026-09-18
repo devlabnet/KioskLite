@@ -2,6 +2,25 @@
 
 All notable changes to KioskLite are documented in this file.
 
+## [Unreleased]
+
+Validated on running devices and the web application on 17–18 September 2026.
+The replacement disk image still needs to be built and tested. The historical
+client startup file must be updated using the documented loop before image creation.
+
+### Fixed and tested
+
+- Fullscreen without address bar on Pi 2 and Pi Zero, after boot and browser restart.
+- OpenAL audio-device startup failure bypassed with `ALSOFT_DRIVERS=null` (silent output).
+- Web slideshow recovery from video startup failures, rejected playback and stalls.
+- Player cleanup and cancellation of obsolete slide callbacks and timers.
+
+### Documented
+
+- Two simultaneous lightweight H.264 640 × 360 clips worked on the tested Pi 2.
+- Pi Zero image slideshows worked; video is not recommended.
+- Video conversion, recovery delays, PHP deployment completeness and image checks.
+
 ## [1.1.0] - 2026-09-16
 
 ### Added

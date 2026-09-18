@@ -52,6 +52,12 @@ The administration interface will be available at:
 https://example.org/kiosk/admin.php
 ```
 
+Include `i18n.php` and the `lang/` directory when deploying or updating the
+application. A missing `i18n.php` caused an HTTP 500 during testing because
+`index.php` requires it. Consult the server PHP error log for HTTP 500 errors;
+browser JavaScript diagnostics do not identify a PHP startup failure.
+Preserve local configuration and uploaded media when updating application files.
+
 ## 3. Create the Local Configuration
 
 Copy:
@@ -227,6 +233,23 @@ DISABLED
 ```
 
 If only one display zone contains active media, KioskLite automatically expands that zone to use the available display area.
+
+### Video behavior in the tested update
+
+The configured duration applies to images. Videos that progress normally play
+to their natural end. The updated `Slideshow` class allows 20 seconds for initial
+progress and 15 seconds without progress after playback starts. Failure is
+followed by a 3-second delay before advancing, so a blank area can last about
+23 seconds at startup or 18 seconds after a stall. Checks run about once per
+second and require a responsive browser JavaScript event loop.
+
+Playback errors and rejected `play()` calls also advance after 3 seconds.
+Changing slides releases the previous video and cancels timers; stale callbacks
+cannot advance a new slide. Failed media are not permanently disabled and may
+be retried on the next cycle. With only one active video, the same item is retried.
+Disable an unsuitable file in the admin interface to avoid recurring blank areas.
+
+Use images on Pi Zero. See [Media preparation and troubleshooting](media.md).
 
 ## 10. Weather Configuration
 

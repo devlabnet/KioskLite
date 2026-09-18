@@ -6,6 +6,30 @@ PiShrink reduces a full raw Raspberry Pi SD card image to approximately the mini
 
 On first boot after restoring the image, the root filesystem can automatically expand to use the available space on the new SD card.
 
+## Pending image: integrate and validate the September corrections
+
+The 17–18 September fixes were tested on running Pi 2 and Pi Zero devices;
+they are not a newly published image. Before capture, install the corrected
+startup loop from [Media and troubleshooting](media.md), including `xdotool`,
+F11 handling on every launch and `ALSOFT_DRIVERS=null`.
+Preserve the tested device-specific boot settings and required `kiosk.conf`.
+
+The slideshow watchdog belongs to the PHP web application. Deploy its updated
+`index.php` to the content server; a client SD image alone does not update it.
+Include `i18n.php` and translation files in the web deployment.
+
+After restoring the candidate image to a separate card, check:
+
+- Cold boot, URL configuration and fullscreen with no address bar on Pi 2 and Zero.
+- `pkill -x midori` from SSH, followed by automatic fullscreen recovery.
+- Pi 2: one, then two lightweight 640 × 360 clips, followed by extended operation.
+- Pi Zero: image-only slideshow over an extended run; do not qualify video support.
+- Web application: a failed/stalled video followed by an image in the same zone.
+- Imager customization, first-boot reboots and filesystem expansion.
+
+Only after validation, choose the new release version and record the actual
+image filename, size and SHA-256. Do not reuse the v1.1.0 checksum for a new image.
+
 ## 1. Create a Raw SD Card Image
 
 Shut down the Raspberry Pi cleanly:

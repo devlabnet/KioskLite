@@ -11,12 +11,41 @@ KioskLite peut afficher n’importe quel site HTTP ou HTTPS en plein écran.
 Il comprend également une application PHP d’affichage dynamique facultative,
 avec gestion des diaporamas et interface d’administration accessible depuis un navigateur.
 
+## Corrections testées les 17–18 septembre 2026 (nouvelle image à préparer)
+
+Le plein écran sans barre d’adresse a été validé sur Pi2 et Pi Zero, au
+démarrage et après relance automatique de Midori. La boucle corrigée active
+la fenêtre Midori avant d’envoyer F11 à chaque lancement.
+
+La configuration vidéo silencieuse testée utilise `ALSOFT_DRIVERS=null` :
+une erreur d’initialisation du périphérique audio OpenAL bloquait auparavant
+la lecture, même avec une vidéo muette. Ce contournement ne produit aucun son
+via OpenAL.
+
+Le Pi2 a affiché deux vidéos H.264 allégées en 640 × 360 simultanément.
+Ce résultat ne garantit pas la lecture de tous les fichiers. Un clip Full HD
+échouait ; sa copie réduite, en profil Baseline et sans audio, fonctionne.
+Le test ne permet pas d’attribuer l’échec à la seule résolution.
+
+Le Pi Zero fonctionne de manière satisfaisante avec les images. **Vidéos
+déconseillées** : même une vidéo légère peut ralentir, se bloquer ou laisser
+une zone blanche.
+
+Le diaporama web corrigé passe à la suite en cas d’échec ou de blocage vidéo
+et libère l’ancien lecteur. La durée configurable concerne les images ; une
+vidéo qui progresse normalement est lue jusqu’à sa fin. Voir le
+[guide médias et dépannage](docs/media.md) (en anglais).
+
+Ces changements ont été testés sur les appareils et l’application web en
+service. La nouvelle image reste à construire et à valider ; les informations
+et la somme de contrôle de l’image v1.1.0 ci-dessous restent celles de cette
+version publiée.
+
 ## Démarrage rapide
 
 ### 1. Écrire l’image KioskLite sur la carte SD
 
-Utilisez Raspberry Pi Imager pour écrire l’image KioskLite sur une carte SD.
-
+Téléchargez le fichier `kiosklite-imager.rpi-imager-manifest` disponible dans la [release KioskLite](https://github.com/devlabnet/KioskLite/releases), puis ouvrez-le avec Raspberry Pi Imager. Sélectionnez **KioskLite**, choisissez votre carte SD et lancez l’écriture de l’image.
 Les options de personnalisation de Raspberry Pi Imager permettent de configurer
 le nom d’hôte, le nom d’utilisateur et le mot de passe, SSH, les identifiants Wi-Fi
 sur le matériel compatible, la disposition du clavier, le pays et le fuseau horaire.
@@ -100,7 +129,7 @@ Elle propose :
 
 - deux zones de diaporama indépendantes
 - la prise en charge des images et des vidéos
-- une durée d’affichage configurable
+- une durée d’affichage configurable pour les images
 - le classement des médias dans l’ordre souhaité
 - l’activation et la désactivation des médias
 - des dates de début et de fin de publication
@@ -120,7 +149,7 @@ KioskLite a été testé sur :
 
 - Raspberry Pi 2 Model B — fonctionnel
 - Raspberry Pi 3 — fonctionnel
-- Raspberry Pi Zero — expérimental
+- Raspberry Pi Zero — diaporamas d’images testés avec les corrections ci-dessus ; vidéos déconseillées
 
 L’image prête à l’emploi de KioskLite v1.1.0 a été validée sur un
 Raspberry Pi 2 Model B, y compris lors d’un premier démarrage complet

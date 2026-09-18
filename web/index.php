@@ -1,6 +1,8 @@
 <?php
-require_once 'i18n.php'; 
+// error_reporting(E_ALL);
+// ini_set('display_errors', '1');
 
+require_once __DIR__ . '/i18n.php';
 ?>
 
 <!DOCTYPE html>
@@ -372,184 +374,173 @@ class Slideshow
 {
     constructor(elementId)
     {
-        this.element =
-            document.getElementById(elementId);
-
+        this.element = document.getElementById(elementId);
         this.items = [];
-
         this.index = 0;
-
         this.timer = null;
+        this.cleanup = null;
+        this.generation = 0;
     }
-
 
     setItems(items)
     {
-        /*
-         *  Avoid restarting the slideshow if its media list has not changed.
-         */
-
-        const oldList =
-            JSON.stringify(this.items);
-
-        const newList =
-            JSON.stringify(items);
-
-        if (oldList === newList) {
+        if (JSON.stringify(this.items) === JSON.stringify(items)) {
             return;
         }
 
         this.items = items;
-
         this.index = 0;
-
         this.show();
     }
 
-
     show()
     {
-        if (this.timer !== null) {
+        const generation = ++this.generation;
+        const isCurrent = () => this.generation === generation;
 
-            clearTimeout(this.timer);
+        clearTimeout(this.timer);
+        this.timer = null;
 
-            this.timer = null;
+        if (this.cleanup) {
+            this.cleanup();
+            this.cleanup = null;
         }
 
         this.element.innerHTML = "";
 
-
-        /* No media */
-
-        if (this.items.length === 0)
-        {
-            const empty =
-                document.createElement("div");
-
+        if (this.items.length === 0) {
+            const empty = document.createElement("div");
             empty.className = "empty";
-
-            empty.textContent =
-                I18N.noMedia;
-
+            empty.textContent = I18N.noMedia;
             this.element.appendChild(empty);
-
             return;
         }
-
-
-        /* Index safety check */
 
         if (this.index >= this.items.length) {
             this.index = 0;
         }
 
+        const item = this.items[this.index];
 
-        const item =
-            this.items[this.index];
+        const schedule = (callback, delay) => {
+            clearTimeout(this.timer);
+            this.timer = setTimeout(() => {
+                if (isCurrent()) {
+                    this.timer = null;
+                    callback();
+                }
+            }, delay);
+        };
 
+        if (item.type === "video") {
+            const video = document.createElement("video");
+            const startupTimeout = 20000;
+            const stallTimeout = 15000;
+            let lastProgressAt = performance.now();
+            let lastPosition = 0;
+            let started = false;
+            let failed = false;
+            let released = false;
 
-        /* ----------------------------------------
-           Video
-        ----------------------------------------- */
+            const release = () => {
+                if (released) return;
+                released = true;
+                video.onended = null;
+                video.onerror = null;
+                video.pause();
+                video.removeAttribute("src");
+                video.load();
+            };
 
-        if (item.type === "video")
-        {
-            const video =
-                document.createElement("video");
+            this.cleanup = release;
 
-            video.src = item.file;
+            const fail = (reason, error) => {
+                if (!isCurrent() || failed) return;
+                failed = true;
+                console.warn("Vidéo ignorée :", item.file, reason, error || "");
+                release();
+                schedule(() => this.next(), 3000);
+            };
+
+            const checkProgress = () => {
+                if (!isCurrent() || failed) return;
+
+                if (video.ended) {
+                    this.next();
+                    return;
+                }
+
+                const now = performance.now();
+                const position = video.currentTime;
+
+                if (Number.isFinite(position) && position > lastPosition + 0.05) {
+                    started = true;
+                    lastPosition = position;
+                    lastProgressAt = now;
+                }
+
+                const limit = started ? stallTimeout : startupTimeout;
+
+                if (now - lastProgressAt >= limit) {
+                    fail(started ? "Lecture bloquée" : "Démarrage trop long");
+                    return;
+                }
+
+                schedule(checkProgress, 1000);
+            };
 
             video.autoplay = true;
             video.muted = true;
-
             video.playsInline = true;
 
             video.onended = () => {
-                this.next();
+                if (isCurrent() && !failed) this.next();
             };
 
-            /*
-             *If the video fails to start or triggers an error, move to the next item.
-             */
-
-            video.onerror = () => {
-
-                console.log(
-                    "Erreur vidéo :",
-                    item.file
-                );
-
-                this.timer =
-                    setTimeout(
-                        () => this.next(),
-                        3000
-                    );
-            };
+            video.onerror = () => fail("Erreur de lecture", video.error);
 
             this.element.appendChild(video);
+            schedule(checkProgress, 1000);
+            video.src = item.file;
 
-            video.play().catch(error => {
-
-                console.log(
-                    "Autoplay failed :",
-                    error
-                );
-
-            });
+            try {
+                const result = video.play();
+                if (result && typeof result.catch === "function") {
+                    result.catch(error => fail("Lecture refusée", error));
+                }
+            } catch (error) {
+                fail("Lecture refusée", error);
+            }
 
             return;
         }
 
+        const image = document.createElement("img");
+        image.className = "slide-image";
 
-        /* ----------------------------------------
-           Image
-        ----------------------------------------- */
-
-        const image =
-            document.createElement("img");
-
-        image.src = item.file;
-
-        image.className =
-            "slide-image";
+        this.cleanup = () => {
+            image.onerror = null;
+        };
 
         image.onerror = () => {
-
-            console.log(
-                "Erreur image :",
-                item.file
-            );
-
-            this.timer =
-                setTimeout(
-                    () => this.next(),
-                    3000
-                );
+            if (!isCurrent()) return;
+            console.warn("Erreur image :", item.file);
+            schedule(() => this.next(), 3000);
         };
 
         this.element.appendChild(image);
 
+        const duration = Number(item.duration);
+        schedule(() => this.next(),
+            (Number.isFinite(duration) && duration > 0 ? duration : 8) * 1000);
 
-        this.timer =
-            setTimeout(
-                () => this.next(),
-				(item.duration || 8) * 1000
-            );
+        image.src = item.file;
     }
-
 
     next()
     {
-        if (this.items.length === 0) {
-            return;
-        }
-
-        this.index++;
-
-        if (this.index >= this.items.length) {
-            this.index = 0;
-        }
-
+        if (this.items.length === 0) return;
+        this.index = (this.index + 1) % this.items.length;
         this.show();
     }
 }

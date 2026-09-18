@@ -14,7 +14,8 @@ The KioskLite client has been tested successfully on:
 - Raspberry Pi 3
 
 A Raspberry Pi Zero can also boot and run the same basic setup, but
-currently requires additional tuning. See the hardware notes for details.
+has now been tested with corrected fullscreen handling for image slideshows.
+Video is not recommended on Pi Zero. See [hardware notes](hardware.md).
 
 ## Recommended Installation — KioskLite Image
 
@@ -130,6 +131,7 @@ sudo apt install --no-install-recommends \
     unclutter \
     openbox \
     midori \
+    xdotool \
     fonts-noto-color-emoji \
     -y
 ```
@@ -212,6 +214,16 @@ configuration page.
 
 Midori runs inside a restart loop. If the browser exits or crashes,
 KioskLite waits briefly and starts it again automatically.
+
+### Corrections for existing v1.1.0 installations
+
+The repository's historical startup file may still use `midori -e Fullscreen`.
+Apply the replacement loop in [Media and troubleshooting](media.md) for the
+fullscreen and silent-audio corrections validated on Pi 2 and Pi Zero.
+The new image is not yet available. Preserve device-specific startup settings,
+including any existing delay before `startx` on Pi Zero.
+Use the home directory of your configured kiosk user, not necessarily `/home/kiosk`.
+The existing `kiosk.conf` sourced by `.xinitrc` must remain available.
 
 ## 7. Raspberry Pi 2 display compatibility
 

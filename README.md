@@ -11,12 +11,38 @@ KioskLite can display any HTTP or HTTPS website in fullscreen mode.
 It also includes an optional PHP digital signage application with
 slideshow management and a browser-based administration interface.
 
+## Updates tested on 17–18 September 2026 (not yet in a new image)
+
+Fullscreen without the address bar was verified on Pi 2 and Pi Zero after
+boot and after automatic Midori restart. The corrected startup loop activates
+the Midori window before sending F11 on every launch.
+
+The tested silent-video setup uses `ALSOFT_DRIVERS=null`: an OpenAL audio-device
+initialization failure previously stopped playback, even with muted video.
+This workaround provides no sound through OpenAL.
+
+Pi 2 successfully displayed two lightweight 640 × 360 H.264 videos at once.
+This is a tested example, not a guarantee for arbitrary files. A Full HD clip
+failed; its reduced-resolution, Baseline-profile, audio-free copy worked.
+The tests do not isolate resolution as the sole cause.
+
+Pi Zero works satisfactorily for image slideshows. **Video is not recommended**:
+even one lightweight video can be slow, stall or leave a blank area.
+
+The updated web slideshow skips failed or stalled videos and releases the old
+player when changing slides. Image duration is configurable; a progressing
+video plays to its natural end. See [Media and troubleshooting](docs/media.md)
+for timing, conversion and startup instructions.
+
+These changes were tested on the running devices and web application.
+The replacement release image still needs to be built and validated; the
+v1.1.0 image and its checksum below remain historical release information.
+
 ## Quick Start
 
 ### 1. Flash the KioskLite image
 
-Use Raspberry Pi Imager to write the KioskLite image to an SD card.
-
+Download `kiosklite-imager.rpi-imager-manifest` from the [KioskLite release](https://github.com/devlabnet/KioskLite/releases), then open it with Raspberry Pi Imager. Select **KioskLite**, choose your SD card and write the image.
 Raspberry Pi Imager customizations can be used to configure the hostname,
 username and password, SSH, Wi-Fi credentials on supported hardware,
 keyboard layout, country and timezone.
@@ -99,7 +125,7 @@ It provides:
 
 - two independent slideshow zones
 - images and videos
-- configurable display duration
+- configurable image display duration
 - media ordering
 - enable / disable status
 - start and end publication dates
@@ -119,7 +145,7 @@ KioskLite has been tested on:
 
 - Raspberry Pi 2 Model B — working
 - Raspberry Pi 3 — working
-- Raspberry Pi Zero — experimental
+- Raspberry Pi Zero — image slideshows tested with the corrections above; video not recommended
 
 The KioskLite v1.1.0 ready-to-use image has been validated on a
 Raspberry Pi 2 Model B, including a complete first boot using
